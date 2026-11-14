@@ -84,14 +84,23 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
 
 <dialog id="set">
  <h2>ตั้งค่า GitHub</h2>
- <small>ข้อมูลเก็บเป็นไฟล์ JSON และรูปภาพใน repo ของคุณ ทุกคนที่เปิดเว็บนี้ดูได้ ส่วนการเขียนต้องใช้ Token</small>
+ <small>ข้อมูลเก็บเป็นไฟล์ JSON และรูปภาพใน repo ของคุณ ทุกคนที่เปิดเว็บนี้ดูได้ ส่วนการเขียนต้องใช้รหัสเขียน</small>
  <div class="row"><div><label for="cOwner">GitHub username</label><input id="cOwner"></div>
  <div><label for="cRepo">ชื่อ repo</label><input id="cRepo"></div></div>
  <div class="row"><div><label for="cBranch">branch</label><input id="cBranch" placeholder="main"></div></div>
- <label for="cToken">Token (เฉพาะคนที่จะเขียนบันทึก)</label>
- <input id="cToken" type="password" autocomplete="off" placeholder="github_pat_...">
- <small>Token เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ควรสร้างแบบ Fine-grained ให้สิทธิ์ Contents: Read and write เฉพาะ repo นี้</small>
+ <div class="actions" style="margin:6px 0 12px"><button class="ghost" type="button" id="openAuth">รหัสเขียนบันทึก</button><button class="ghost" type="button" id="lockBtn">ล็อกเครื่องนี้</button></div>
  <div class="actions"><button type="button" id="saveCfg">บันทึกการตั้งค่า</button><button class="ghost" type="button" id="closeCfg">ปิด</button></div>
+</dialog>
+<dialog id="auth">
+ <h2 id="aTitle">ใส่รหัสเขียนบันทึก</h2>
+ <small id="aHint"></small>
+ <div id="gGrp"><label for="aTok">GitHub Token (ใส่ครั้งเดียว)</label><input id="aTok" type="password" autocomplete="off" placeholder="github_pat_..."><small>สร้างแบบ Fine-grained ให้สิทธิ์ Contents: Read and write เฉพาะ repo นี้</small></div>
+ <div id="pGrp"><label for="aPw" id="aPwL">รหัสเขียน</label><input id="aPw" type="password" autocomplete="off"></div>
+ <div id="nGrp"><label for="aNew">รหัสใหม่ของคุณ (อย่างน้อย 8 ตัว ยิ่งยาวยิ่งปลอดภัย)</label><input id="aNew" type="password" autocomplete="new-password"><label for="aNew2" style="margin-top:8px">ยืนยันรหัสใหม่</label><input id="aNew2" type="password" autocomplete="new-password"></div>
+ <label id="rGrp" style="margin-top:10px"><input type="checkbox" id="aRem" style="width:auto"> จำไว้ในเครื่องนี้</label>
+ <div class="msg err" id="aErr" role="alert"></div>
+ <div class="actions" style="margin-top:8px"><button type="button" id="aGo">ตกลง</button><button class="ghost" type="button" id="aCancel">ยกเลิก</button></div>
+ <div class="actions" id="aLinks" style="margin-top:10px"><button class="ghost" type="button" id="aChange">เปลี่ยนรหัส</button><button class="ghost" type="button" id="aReset">เปลี่ยน GitHub Token</button></div>
 </dialog>
 <dialog id="lb"><img id="lbImg" alt=""></dialog>
 
@@ -105,8 +114,9 @@ const store={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}}
 let cfg=JSON.parse(store.get('cd_cfg')||'{}');
 for(const k in CONFIG) if(CONFIG[k]) cfg[k]=CONFIG[k];
 cfg.branch=cfg.branch||'main';
-let token=store.get('cd_token'), entries=[], lastRaw=null, newestFirst=true, pending=[];
+let token=store.get('cd_token')||sget('cd_tok'), entries=[], lastRaw=null, newestFirst=true, pending=[];
 
+function sget(k){try{return sessionStorage.getItem(k)||''}catch(e){return ''}}
 const ready=()=>cfg.owner&&cfg.repo;
 const api=p=>`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`;
 const rawUrl=p=>`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${p}`;
@@ -194,7 +204,8 @@ $('files').onchange=async e=>{
 };
 
 $('save').onclick=async()=>{
- if(!ready()||!token){$('set').showModal();return}
+ if(!ready()){$('set').showModal();return}
+ if(!token&&!(await openAuth()))return;
  const text=$('text').value.trim(),date=$('date').value;
  if(!date){say('เลือกวันที่ก่อนนะ',1);return}
  if(!text&&!pending.length){say('เขียนข้อความหรือเพิ่มรูปอย่างน้อยหนึ่งอย่าง',1);return}
@@ -218,19 +229,100 @@ $('save').onclick=async()=>{
 };
 
 async function removeEntry(id){
- if(!token){$('set').showModal();return}
+ if(!ready()){$('set').showModal();return}
+ if(!token&&!(await openAuth()))return;
  if(!confirm('ลบบันทึกนี้ใช่ไหม'))return;
  try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');lastRaw=JSON.stringify(entries,null,1);render()}
  catch(e){say(e.message,1)}
 }
 
+/* ---- รหัสเขียน: เก็บ GitHub token แบบเข้ารหัสไว้ใน data/auth.json ---- */
+const AUTH_PATH='data/auth.json';
+const bytesB64=u=>{let s='';u.forEach(c=>s+=String.fromCharCode(c));return btoa(s)};
+const b64Bytes=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function aesKey(pw,salt){
+ const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:300000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function sealTok(tok,pw){
+ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},await aesKey(pw,salt),new TextEncoder().encode(tok));
+ return {v:1,salt:bytesB64(salt),iv:bytesB64(iv),ct:bytesB64(new Uint8Array(ct))};
+}
+async function openTok(o,pw){
+ const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64Bytes(o.iv)},await aesKey(pw,b64Bytes(o.salt)),b64Bytes(o.ct));
+ return new TextDecoder().decode(pt);
+}
+async function fetchAuth(){
+ const r=await fetch(api(AUTH_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
+ if(r.status===404)return null;
+ if(!r.ok)throw new Error('อ่านรหัสไม่สำเร็จ ('+r.status+')');
+ return JSON.parse(await r.text());
+}
+async function writeAuth(tok,pw){
+ const prev=token;token=tok;
+ try{
+  const g=await gh('GET',AUTH_PATH);
+  if(g.status!==200&&g.status!==404)throw new Error('GitHub Token ใช้ไม่ได้ ('+g.status+') ตรวจสอบชื่อ repo และสิทธิ์ Contents: Read and write');
+  const sha=g.status===200?(await g.json()).sha:undefined;
+  const p=await gh('PUT',AUTH_PATH,{message:'อัปเดตรหัสเขียน',branch:cfg.branch,sha,content:toB64(JSON.stringify(await sealTok(tok,pw)))});
+  if(!p.ok)throw new Error('บันทึกรหัสไม่สำเร็จ ('+p.status+')');
+ }catch(e){token=prev;throw e}
+}
+function setTok(t,remember){token=t;try{sessionStorage.setItem('cd_tok',t)}catch(e){}if(remember)store.set('cd_token',t)}
+let aMode='unlock',aDone=null,aObj=null;
+function showMode(m){
+ aMode=m;$('aErr').textContent='';
+ const sh=(id,on)=>$(id).style.display=on?'':'none';
+ sh('gGrp',m==='setup');sh('pGrp',m!=='setup');sh('nGrp',m!=='unlock');sh('rGrp',m==='unlock');sh('aLinks',m==='unlock');
+ $('aTitle').textContent=m==='setup'?'ตั้งรหัสเขียนบันทึก':m==='change'?'เปลี่ยนรหัสเขียน':'ใส่รหัสเขียนบันทึก';
+ $('aPwL').textContent=m==='change'?'รหัสปัจจุบัน':'รหัสเขียน';
+ $('aHint').textContent=m==='setup'?'ใส่ GitHub Token ครั้งเดียว แล้วตั้งรหัสของคุณเอง ครั้งต่อไปใช้แค่รหัสนี้':m==='unlock'?'ใส่รหัสที่ตั้งไว้เพื่อเขียนหรือลบบันทึก':'';
+ ['aTok','aPw','aNew','aNew2'].forEach(i=>$(i).value='');
+}
+async function openAuth(m){
+ if(!ready()){$('set').showModal();return false}
+ let o;try{o=await fetchAuth()}catch(e){say(e.message,1);return false}
+ aObj=o;showMode(m||(o?'unlock':'setup'));
+ $('auth').showModal();
+ return new Promise(res=>{aDone=res});
+}
+function finishAuth(ok){const d=aDone;aDone=null;if($('auth').open)$('auth').close();if(d)d(ok)}
+$('auth').addEventListener('close',()=>{if(aDone){const d=aDone;aDone=null;d(false)}});
+$('aCancel').onclick=()=>$('auth').close();
+$('aChange').onclick=()=>showMode('change');
+$('aReset').onclick=()=>showMode('setup');
+$('aGo').onclick=async()=>{
+ const btn=$('aGo'),err=t=>{$('aErr').textContent=t};
+ btn.disabled=true;err('');
+ try{
+  if(aMode==='unlock'){
+   const pw=$('aPw').value;if(!pw)throw new Error('ใส่รหัสก่อน');
+   let tok;try{tok=await openTok(aObj,pw)}catch(e){throw new Error('รหัสไม่ถูกต้อง')}
+   setTok(tok,$('aRem').checked);
+  }else{
+   const np=$('aNew').value;
+   if(np.length<8)throw new Error('รหัสต้องมีอย่างน้อย 8 ตัวอักษร');
+   if(np!==$('aNew2').value)throw new Error('รหัสใหม่ทั้งสองช่องไม่ตรงกัน');
+   let tok;
+   if(aMode==='setup'){tok=$('aTok').value.trim();if(!tok)throw new Error('ใส่ GitHub Token ก่อน')}
+   else{try{tok=await openTok(aObj,$('aPw').value)}catch(e){throw new Error('รหัสปัจจุบันไม่ถูกต้อง')}}
+   await writeAuth(tok,np);
+   setTok(tok,false);
+  }
+  finishAuth(true);
+ }catch(e){err(e.message)}
+ btn.disabled=false;
+};
+$('openAuth').onclick=()=>{$('set').close();openAuth()};
+$('lockBtn').onclick=()=>{token='';store.set('cd_token','');try{sessionStorage.removeItem('cd_tok')}catch(e){}$('set').close();say('ล็อกเครื่องนี้แล้ว')};
+
 $('sort').onclick=()=>{newestFirst=!newestFirst;$('sort').textContent='เรียง: '+(newestFirst?'ใหม่ไปเก่า':'เก่าไปใหม่');render()};
-$('openSet').onclick=()=>{$('cOwner').value=cfg.owner||'';$('cRepo').value=cfg.repo||'';$('cBranch').value=cfg.branch||'main';$('cToken').value=token;$('set').showModal()};
+$('openSet').onclick=()=>{$('cOwner').value=cfg.owner||'';$('cRepo').value=cfg.repo||'';$('cBranch').value=cfg.branch||'main';$('set').showModal()};
 $('closeCfg').onclick=()=>$('set').close();
 $('saveCfg').onclick=()=>{
  cfg={owner:$('cOwner').value.trim(),repo:$('cRepo').value.trim(),branch:$('cBranch').value.trim()||'main'};
- token=$('cToken').value.trim();
- store.set('cd_cfg',JSON.stringify(cfg));store.set('cd_token',token);
+ store.set('cd_cfg',JSON.stringify(cfg));
  for(const k in CONFIG) if(CONFIG[k]) cfg[k]=CONFIG[k];
  lastRaw=null;$('set').close();load();
 };
