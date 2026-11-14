@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ไดอารี่ของเรา 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffe4ee;--bg2:#fff4f8;--card:#fffdfd;--ink:#5a2a3c;--soft:#a2677f;--pink:#ff6fa5;--pink2:#ff9cc2;--line:#ffc9dd;}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Mali','Noto Sans Thai',sans-serif;color:var(--ink);line-height:1.6;
+ background:radial-gradient(circle at 15% 10%,#fff 0,transparent 35%),linear-gradient(160deg,var(--bg2),var(--bg));min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 80px}
+header{text-align:center;margin-bottom:22px}
+h1{font-size:2.1rem;margin:0;color:var(--pink);font-weight:700;letter-spacing:.5px}
+.sub{color:var(--soft);margin:2px 0 0}
+.bar{display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:.85rem;color:var(--soft)}
+.live{display:inline-flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;background:#9ad6a8}.dot.off{background:#d9a0b3}
+button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:9px 20px;background:var(--pink);color:#fff;font-weight:600}
+button:hover{background:#f2538f}button.ghost{background:#fff;color:var(--pink);border:1.5px solid var(--pink2)}
+button.ghost:hover{background:#fff0f6}button:disabled{opacity:.6;cursor:wait}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #ffb3d1;outline-offset:2px}
+.form{background:var(--card);border-radius:22px;padding:18px;border:2px dashed var(--pink2);box-shadow:0 8px 24px rgba(255,111,165,.15)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+label{display:block;font-size:.85rem;color:var(--soft);margin-bottom:2px}
+input,textarea{font:inherit;color:var(--ink);width:100%;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;background:#fff}
+.row>div{flex:1;min-width:150px}
+textarea{min-height:100px;resize:vertical}
+.previews{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.previews img{width:72px;height:72px;object-fit:cover;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.msg{font-size:.85rem;color:var(--soft)}.msg.err{color:#c4264f}
+.sorter{display:flex;justify-content:flex-end;margin:22px 0 6px}
+.entry{position:relative;background:var(--card);border-radius:22px;padding:18px 18px 16px;margin:0 0 22px;box-shadow:0 8px 24px rgba(255,111,165,.18);border-left:8px solid var(--pink2)}
+.entry time{display:block;font-weight:700;color:var(--pink);font-size:1.05rem}
+.by{font-size:.8rem;color:var(--soft)}
+.entry p{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.photos{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.photos figure{margin:0;background:#fff;padding:6px 6px 12px;border-radius:6px;box-shadow:0 3px 10px rgba(90,42,60,.2);flex:1 1 180px;max-width:100%}
+.photos figure:nth-child(odd){transform:rotate(-1.2deg)}.photos figure:nth-child(even){transform:rotate(1.2deg)}
+.photos img{display:block;width:100%;height:auto;max-height:420px;object-fit:cover;border-radius:3px;cursor:zoom-in}
+.del{position:absolute;top:10px;right:12px;background:none;color:var(--soft);padding:2px 8px;font-size:.8rem;font-weight:400}
+.del:hover{background:#ffe9f1;color:#c4264f}
+.empty{text-align:center;color:var(--soft);padding:34px 10px}
+dialog{border:0;border-radius:22px;padding:20px;max-width:440px;width:92%;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(90,42,60,.45)}
+dialog h2{margin:0 0 6px;color:var(--pink)}
+dialog small{display:block;color:var(--soft);margin:4px 0 10px}
+#lb{max-width:96vw;width:auto;padding:8px;background:#fff}#lb img{max-width:100%;max-height:88vh;display:block;border-radius:12px}
+@media(prefers-reduced-motion:no-preference){.entry{transition:transform .2s}.entry:hover{transform:translateY(-2px)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1>💕 ไดอารี่ของเรา 💕</h1>
+ <p class="sub">วันนี้เราไปทำอะไรกันมาบ้างนะ</p>
+ <div class="bar">
+  <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
+  <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
+ </div>
+</header>
+
+<section class="form" aria-label="เขียนบันทึกใหม่">
+ <div class="row">
+  <div><label for="date">วันที่</label><input type="date" id="date"></div>
+  <div><label for="author">คนเขียน</label><input id="author" placeholder="เช่น เรา / แฟน" maxlength="30"></div>
+ </div>
+ <label for="text">วันนี้ทำอะไรกัน</label>
+ <textarea id="text" placeholder="เล่าเรื่องราวของวันนี้..."></textarea>
+ <div class="previews" id="previews"></div>
+ <div class="actions">
+  <button class="ghost" type="button" id="pick">เพิ่มรูป</button>
+  <input type="file" id="files" accept="image/*" multiple hidden>
+  <button type="button" id="save">บันทึกลงไดอารี่</button>
+  <span class="msg" id="msg"></span>
+ </div>
+</section>
+
+<div class="sorter"><button class="ghost" type="button" id="sort">เรียง: ใหม่ไปเก่า</button></div>
+<main id="list"></main>
+</div>
+
+<dialog id="set">
+ <h2>ตั้งค่า GitHub</h2>
+ <small>ข้อมูลเก็บเป็นไฟล์ JSON และรูปภาพใน repo ของคุณ ทุกคนที่เปิดเว็บนี้ดูได้ ส่วนการเขียนต้องใช้ Token</small>
+ <div class="row"><div><label for="cOwner">GitHub username</label><input id="cOwner"></div>
+ <div><label for="cRepo">ชื่อ repo</label><input id="cRepo"></div></div>
+ <div class="row"><div><label for="cBranch">branch</label><input id="cBranch" placeholder="main"></div></div>
+ <label for="cToken">Token (เฉพาะคนที่จะเขียนบันทึก)</label>
+ <input id="cToken" type="password" autocomplete="off" placeholder="github_pat_...">
+ <small>Token เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ควรสร้างแบบ Fine-grained ให้สิทธิ์ Contents: Read and write เฉพาะ repo นี้</small>
+ <div class="actions"><button type="button" id="saveCfg">บันทึกการตั้งค่า</button><button class="ghost" type="button" id="closeCfg">ปิด</button></div>
+</dialog>
+<dialog id="lb"><img id="lbImg" alt=""></dialog>
+
+<script>
+/* ใส่ค่าตรงนี้เพื่อให้ทุกคนที่เปิดเว็บเห็นข้อมูลทันทีโดยไม่ต้องตั้งค่า */
+const CONFIG={owner:'',repo:'',branch:'main'};
+const DATA_PATH='data/entries.json', IMG_DIR='images', POLL_MS=15000;
+
+const $=id=>document.getElementById(id);
+const store={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+let cfg=JSON.parse(store.get('cd_cfg')||'{}');
+for(const k in CONFIG) if(CONFIG[k]) cfg[k]=CONFIG[k];
+cfg.branch=cfg.branch||'main';
+let token=store.get('cd_token'), entries=[], lastRaw=null, newestFirst=true, pending=[];
+
+const ready=()=>cfg.owner&&cfg.repo;
+const api=p=>`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`;
+const rawUrl=p=>`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${p}`;
+const toB64=s=>{const b=new TextEncoder().encode(s);let x='';b.forEach(c=>x+=String.fromCharCode(c));return btoa(x)};
+const fromB64=s=>{const x=atob(s.replace(/\s/g,''));return new TextDecoder().decode(Uint8Array.from(x,c=>c.charCodeAt(0)))};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const say=(t,err)=>{$('msg').textContent=t;$('msg').className='msg'+(err?' err':'')};
+
+function setLive(ok,t){$('dot').className='dot'+(ok?'':' off');$('status').textContent=t}
+
+async function load(){
+ if(!ready()){setLive(false,'ยังไม่ได้ตั้งค่า');render();return}
+ try{
+  const r=await fetch(api(DATA_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
+  if(r.status===404){entries=[];lastRaw='[]';setLive(true,'ออนไลน์ (ยังไม่มีบันทึก)');render();return}
+  if(!r.ok)throw new Error(r.status);
+  const raw=await r.text();
+  if(raw!==lastRaw){lastRaw=raw;entries=JSON.parse(raw);render()}
+  setLive(true,'อัปเดตล่าสุด '+new Date().toLocaleTimeString('th-TH'));
+ }catch(e){setLive(false,'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง')}
+}
+
+function render(){
+ const box=$('list');box.textContent='';
+ if(!entries.length){const d=document.createElement('div');d.className='empty';
+  d.textContent=ready()?'ยังไม่มีบันทึก เขียนเรื่องแรกของเราด้านบนได้เลย':'กดปุ่มตั้งค่าเพื่อเชื่อมต่อ GitHub ก่อน';box.append(d);return}
+ const s=[...entries].sort((a,b)=>(a.date===b.date?(a.created||0)-(b.created||0):a.date<b.date?-1:1)*(newestFirst?-1:1));
+ for(const e of s){
+  const a=document.createElement('article');a.className='entry';
+  const t=document.createElement('time');t.dateTime=e.date;
+  const [y,m,d]=e.date.split('-').map(Number);
+  t.textContent=new Date(y,m-1,d).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  a.append(t);
+  if(e.author){const b=document.createElement('span');b.className='by';b.textContent='เขียนโดย '+e.author;a.append(b)}
+  if(e.text){const p=document.createElement('p');p.textContent=e.text;a.append(p)}
+  if(e.images&&e.images.length){
+   const ph=document.createElement('div');ph.className='photos';
+   for(const im of e.images){const f=document.createElement('figure'),i=document.createElement('img');
+    i.src=rawUrl(im);i.loading='lazy';i.alt='รูปวันที่ '+e.date;
+    i.onclick=()=>{$('lbImg').src=i.src;$('lb').showModal()};f.append(i);ph.append(f)}
+   a.append(ph);
+  }
+  const x=document.createElement('button');x.className='del';x.type='button';x.textContent='ลบ';
+  x.onclick=()=>removeEntry(e.id);a.append(x);
+  box.append(a);
+ }
+}
+
+async function gh(method,path,body,noCache){
+ const r=await fetch(api(path)+(method==='GET'?'?ref='+encodeURIComponent(cfg.branch):''),{method,cache:'no-store',
+  headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json'},body:body?JSON.stringify(body):undefined});
+ return r;
+}
+
+async function commit(mutate,message){
+ for(let i=0;i<3;i++){
+  const g=await gh('GET',DATA_PATH);
+  let list=[],sha;
+  if(g.status===200){const j=await g.json();sha=j.sha;list=JSON.parse(fromB64(j.content))}
+  else if(g.status!==404)throw new Error('อ่านข้อมูลไม่สำเร็จ ('+g.status+') ตรวจสอบ Token และชื่อ repo');
+  list=mutate(list);
+  const p=await gh('PUT',DATA_PATH,{message,branch:cfg.branch,sha,content:toB64(JSON.stringify(list,null,1))});
+  if(p.ok)return list;
+  if(p.status!==409&&p.status!==422)throw new Error('บันทึกไม่สำเร็จ ('+p.status+')');
+ }
+ throw new Error('มีคนบันทึกพร้อมกัน ลองกดบันทึกอีกครั้ง');
+}
+
+function resize(file,max=1400){
+ return new Promise((res,rej)=>{
+  const u=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+   c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+   URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.85))};
+  im.onerror=()=>rej(new Error('เปิดรูปไม่ได้'));im.src=u;
+ });
+}
+
+$('pick').onclick=()=>$('files').click();
+$('files').onchange=async e=>{
+ for(const f of e.target.files){
+  try{const d=await resize(f);pending.push(d);const i=document.createElement('img');i.src=d;i.alt='';$('previews').append(i)}catch(err){say(err.message,1)}
+ }
+ e.target.value='';
+};
+
+$('save').onclick=async()=>{
+ if(!ready()||!token){$('set').showModal();return}
+ const text=$('text').value.trim(),date=$('date').value;
+ if(!date){say('เลือกวันที่ก่อนนะ',1);return}
+ if(!text&&!pending.length){say('เขียนข้อความหรือเพิ่มรูปอย่างน้อยหนึ่งอย่าง',1);return}
+ const btn=$('save');btn.disabled=true;say('กำลังบันทึก...');
+ try{
+  const id=Date.now().toString(36),images=[];
+  for(let i=0;i<pending.length;i++){
+   const path=`${IMG_DIR}/${id}-${i}.jpg`;
+   const r=await gh('PUT',path,{message:'เพิ่มรูป '+date,branch:cfg.branch,content:pending[i].split(',')[1]});
+   if(!r.ok)throw new Error('อัปโหลดรูปไม่สำเร็จ ('+r.status+')');
+   images.push(path);
+  }
+  const entry={id,date,author:$('author').value.trim(),text,images,created:Date.now()};
+  store.set('cd_author',entry.author);
+  entries=await commit(l=>[...l,entry],'เพิ่มบันทึก '+date);
+  lastRaw=JSON.stringify(entries,null,1);
+  $('text').value='';$('previews').textContent='';pending=[];
+  say('บันทึกแล้ว 💕');render();
+ }catch(e){say(e.message,1)}
+ btn.disabled=false;
+};
+
+async function removeEntry(id){
+ if(!token){$('set').showModal();return}
+ if(!confirm('ลบบันทึกนี้ใช่ไหม'))return;
+ try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');lastRaw=JSON.stringify(entries,null,1);render()}
+ catch(e){say(e.message,1)}
+}
+
+$('sort').onclick=()=>{newestFirst=!newestFirst;$('sort').textContent='เรียง: '+(newestFirst?'ใหม่ไปเก่า':'เก่าไปใหม่');render()};
+$('openSet').onclick=()=>{$('cOwner').value=cfg.owner||'';$('cRepo').value=cfg.repo||'';$('cBranch').value=cfg.branch||'main';$('cToken').value=token;$('set').showModal()};
+$('closeCfg').onclick=()=>$('set').close();
+$('saveCfg').onclick=()=>{
+ cfg={owner:$('cOwner').value.trim(),repo:$('cRepo').value.trim(),branch:$('cBranch').value.trim()||'main'};
+ token=$('cToken').value.trim();
+ store.set('cd_cfg',JSON.stringify(cfg));store.set('cd_token',token);
+ for(const k in CONFIG) if(CONFIG[k]) cfg[k]=CONFIG[k];
+ lastRaw=null;$('set').close();load();
+};
+$('lb').onclick=()=>$('lb').close();
+
+$('date').value=today();$('author').value=store.get('cd_author');
+render();load();
+setInterval(()=>{if(!document.hidden)load()},POLL_MS);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+</script>
+</body>
+</html>
