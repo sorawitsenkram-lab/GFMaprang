@@ -57,7 +57,8 @@ textarea{min-height:100px;resize:vertical}
 .timeline:has(.empty)::before{display:none}
 .entry{position:relative;padding:20px 20px 18px;border-radius:26px;background:linear-gradient(150deg,#fff 0,#fff0f6 100%);border:1px solid #fff;
  box-shadow:0 1px 0 #fff inset,0 3px 0 rgba(255,156,194,.4),0 22px 34px -14px rgba(224,70,127,.55),0 6px 12px rgba(90,42,60,.07);
- transition:transform .25s,box-shadow .25s;animation:up .5s both}
+ transition:transform .25s,box-shadow .25s}
+.entry.new{animation:up .5s both}
 .entry:not(:first-child){margin-top:-34px}
 .entry::before{content:'\2665';position:absolute;right:16px;bottom:6px;font-size:64px;line-height:1;color:rgba(255,111,165,.1);pointer-events:none}
 .entry::after{content:'\2665';position:absolute;top:22px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff;
@@ -90,15 +91,37 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
  .entry:not(:first-child){margin-top:0}
  .l::after,.r::after{left:-32px;right:auto}
 }
-@media(prefers-reduced-motion:reduce){.hearts{display:none}.entry{animation:none}}
+@media(prefers-reduced-motion:reduce){.hearts{display:none}.entry.new{animation:none}}
+.dwrap{position:relative}
+.datebtn{width:100%;text-align:left;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:16px;color:var(--ink);font-weight:600;
+ background:linear-gradient(180deg,#fff,#fff0f6);box-shadow:0 0 0 1.5px var(--pink2) inset,0 4px 0 #f3b3cc,0 9px 14px rgba(224,70,127,.15)}
+.cal{position:absolute;z-index:20;top:calc(100% + 8px);left:0;width:min(330px,calc(100vw - 48px));padding:14px;border-radius:24px;
+ background:linear-gradient(150deg,#fff,#fff0f6);border:2px solid #fff;box-shadow:0 30px 50px -16px rgba(224,70,127,.6),0 8px 16px rgba(90,42,60,.12);animation:up .2s both}
+.cal[hidden]{display:none}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.calhead b{color:var(--deep);font-size:1.05rem}
+.cal .nav{padding:2px 14px;font-size:1.2rem;line-height:1.5}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dow{font-size:.72rem;color:var(--soft);margin-bottom:4px}
+.cal .day{position:relative;padding:0;aspect-ratio:1;border-radius:50%;background:none;box-shadow:none;color:var(--ink);font-weight:400;font-size:.9rem}
+.cal .day:hover{background:#ffe3ee;filter:none}
+.cal .day:active{transform:none;box-shadow:none}
+.cal .day.today{box-shadow:0 0 0 2px var(--pink2) inset}
+.cal .day.sel{background:linear-gradient(180deg,#ff8dba,var(--pink));color:#fff;font-weight:700;box-shadow:0 3px 0 var(--deep),0 6px 10px rgba(224,70,127,.35)}
+.cal .day.has::after{content:'';position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--pink)}
+.cal .day.sel.has::after{background:#fff}
+.calfoot{display:flex;justify-content:center;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:24px;z-index:50;transform:translate(-50%,30px);opacity:0;pointer-events:none;padding:10px 22px;border-radius:999px;color:#fff;font-weight:600;
+ background:linear-gradient(180deg,#ff8dba,var(--pink));box-shadow:0 4px 0 var(--deep),0 12px 22px rgba(224,70,127,.4);transition:opacity .3s,transform .3s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
 <div class="hearts" aria-hidden="true"><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span></div>
 <div class="wrap">
 <header>
- <h1>💕 ไดอารี่ของเรา 💕</h1>
- <p class="sub">วันนี้เราไปทำอะไรกันมาบ้างนะ</p>
+ <h1>💕 ไดอารี่ของมะปรางง 💕</h1>
+ <p class="sub">วันนี้ผ่านอะไรกันมาบ้างนะ</p>
  <div class="bar">
   <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
   <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
@@ -107,7 +130,16 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
 
 <section class="form" aria-label="เขียนบันทึกใหม่">
  <div class="row">
-  <div><label for="date">วันที่</label><input type="date" id="date"></div>
+  <div class="dwrap"><label for="dateBtn">วันที่</label>
+   <button type="button" class="datebtn" id="dateBtn" aria-haspopup="dialog">📅 <span id="dateTxt"></span></button>
+   <input type="hidden" id="date">
+   <div class="cal" id="cal" hidden role="dialog" aria-label="เลือกวันที่">
+    <div class="calhead"><button type="button" class="ghost nav" id="calPrev" aria-label="เดือนก่อนหน้า">&#8249;</button><b id="calTitle"></b><button type="button" class="ghost nav" id="calNext" aria-label="เดือนถัดไป">&#8250;</button></div>
+    <div class="dow"><span>อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span></div>
+    <div class="days" id="calGrid"></div>
+    <div class="calfoot"><button type="button" class="ghost" id="calToday">วันนี้</button></div>
+   </div>
+  </div>
   <div><label for="author">คนเขียน</label><input id="author" placeholder="เช่น เรา / แฟน" maxlength="30"></div>
  </div>
  <label for="text">วันนี้ทำอะไรกัน</label>
@@ -146,11 +178,12 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
  <div class="actions" id="aLinks" style="margin-top:10px"><button class="ghost" type="button" id="aChange">เปลี่ยนรหัส</button><button class="ghost" type="button" id="aReset">เปลี่ยน GitHub Token</button></div>
 </dialog>
 <dialog id="lb"><img id="lbImg" alt=""></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script>
 /* ใส่ค่าตรงนี้เพื่อให้ทุกคนที่เปิดเว็บเห็นข้อมูลทันทีโดยไม่ต้องตั้งค่า */
 const CONFIG={owner:'sorawitsenkram-lab',repo:'GFMaprang',branch:'main'};
 const DATA_PATH='data/entries.json', IMG_DIR='images', POLL_MS=15000;
-
 const $=id=>document.getElementById(id);
 const store={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 let cfg=JSON.parse(store.get('cd_cfg')||'{}');
@@ -159,6 +192,7 @@ cfg.branch=cfg.branch||'main';
 let token=store.get('cd_token')||sget('cd_tok'), entries=[], lastRaw=null, newestFirst=true, pending=[];
 
 function sget(k){try{return sessionStorage.getItem(k)||''}catch(e){return ''}}
+let seen=null,toastT;
 const ready=()=>cfg.owner&&cfg.repo;
 const api=p=>`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`;
 const rawUrl=p=>`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${p}`;
@@ -176,18 +210,20 @@ async function load(){
   if(r.status===404){entries=[];lastRaw='[]';setLive(true,'ออนไลน์ (ยังไม่มีบันทึก)');render();return}
   if(!r.ok)throw new Error(r.status);
   const raw=await r.text();
-  if(raw!==lastRaw){lastRaw=raw;entries=JSON.parse(raw);render()}
-  setLive(true,'อัปเดตล่าสุด '+new Date().toLocaleTimeString('th-TH'));
+  if(raw!==lastRaw){const had=lastRaw!==null,old=new Set(entries.map(e=>e.id));lastRaw=raw;entries=JSON.parse(raw);const add=entries.filter(e=>!old.has(e.id));render();if(had&&add.length)toast('มีบันทึกใหม่ '+add.length+' รายการ 💕')}
+  setLive(true,'เรียลไทม์ · เช็กล่าสุด '+new Date().toLocaleTimeString('th-TH'));
  }catch(e){setLive(false,'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง')}
 }
 
 function render(){
+ const prevSeen=seen;seen=new Set(entries.map(e=>e.id));
+ if(!$('cal').hidden)drawCal();
  const box=$('list');box.textContent='';
  if(!entries.length){const d=document.createElement('div');d.className='empty';
   d.textContent=ready()?'ยังไม่มีบันทึก เขียนเรื่องแรกของเราด้านบนได้เลย':'กดปุ่มตั้งค่าเพื่อเชื่อมต่อ GitHub ก่อน';box.append(d);return}
  const s=[...entries].sort((a,b)=>(a.date===b.date?(a.created||0)-(b.created||0):a.date<b.date?-1:1)*(newestFirst?-1:1));
  for(const [n,e] of s.entries()){
-  const a=document.createElement('article');a.className='entry '+(n%2?'r':'l');a.style.gridRow=n+1;
+  const a=document.createElement('article');a.className='entry '+(n%2?'r':'l')+(!prevSeen||!prevSeen.has(e.id)?' new':'');a.style.gridRow=n+1;
   const t=document.createElement('time');t.dateTime=e.date;
   const [y,m,d]=e.date.split('-').map(Number);
   t.textContent=new Date(y,m-1,d).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -359,6 +395,39 @@ $('aGo').onclick=async()=>{
 $('openAuth').onclick=()=>{$('set').close();openAuth()};
 $('lockBtn').onclick=()=>{token='';store.set('cd_token','');try{sessionStorage.removeItem('cd_tok')}catch(e){}$('set').close();say('ล็อกเครื่องนี้แล้ว')};
 
+/* ---- ปฏิทินเลือกวันที่ ---- */
+const pad=n=>String(n).padStart(2,'0');
+const TH_M=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+let calY=0,calM=0;
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),4000)}
+function setDate(v){
+ $('date').value=v;const [y,m,d]=v.split('-').map(Number);
+ $('dateTxt').textContent=new Date(y,m-1,d).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function drawCal(){
+ const g=$('calGrid');g.textContent='';
+ $('calTitle').textContent=TH_M[calM]+' '+(calY+543);
+ const first=new Date(calY,calM,1).getDay(),days=new Date(calY,calM+1,0).getDate();
+ const have=new Set(entries.map(e=>e.date)),sel=$('date').value,td=today();
+ for(let i=0;i<first;i++)g.append(document.createElement('span'));
+ for(let d=1;d<=days;d++){
+  const v=calY+'-'+pad(calM+1)+'-'+pad(d);
+  const b=document.createElement('button');b.type='button';b.textContent=d;
+  b.className='day'+(v===sel?' sel':'')+(v===td?' today':'')+(have.has(v)?' has':'');
+  b.onclick=()=>{setDate(v);closeCal()};g.append(b);
+ }
+}
+function closeCal(){$('cal').hidden=true}
+$('dateBtn').onclick=()=>{
+ if(!$('cal').hidden){closeCal();return}
+ const [y,m]=$('date').value.split('-').map(Number);calY=y;calM=m-1;drawCal();$('cal').hidden=false;
+};
+$('calPrev').onclick=()=>{calM--;if(calM<0){calM=11;calY--}drawCal()};
+$('calNext').onclick=()=>{calM++;if(calM>11){calM=0;calY++}drawCal()};
+$('calToday').onclick=()=>{setDate(today());closeCal()};
+document.addEventListener('click',e=>{if(!$('cal').hidden&&!e.target.closest('.dwrap'))closeCal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCal()});
+
 $('sort').onclick=()=>{newestFirst=!newestFirst;$('sort').textContent='เรียง: '+(newestFirst?'ใหม่ไปเก่า':'เก่าไปใหม่');render()};
 $('openSet').onclick=()=>{$('cOwner').value=cfg.owner||'';$('cRepo').value=cfg.repo||'';$('cBranch').value=cfg.branch||'main';$('set').showModal()};
 $('closeCfg').onclick=()=>$('set').close();
@@ -370,10 +439,11 @@ $('saveCfg').onclick=()=>{
 };
 $('lb').onclick=()=>$('lb').close();
 
-$('date').value=today();$('author').value=store.get('cd_author');
+setDate(today());$('author').value=store.get('cd_author');
 render();load();
 setInterval(()=>{if(!document.hidden)load()},POLL_MS);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+window.addEventListener('focus',load);window.addEventListener('online',load);
 </script>
 </body>
 </html>
