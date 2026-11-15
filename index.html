@@ -231,14 +231,86 @@ input:focus,textarea:focus,select:focus{border-color:var(--pink);box-shadow:0 0 
 .sub.done .ty::after{display:none}
 @keyframes blink{50%{opacity:0}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---- ป๊อปอัปข้อความก่อนเข้าเว็บ ---- */
+body.introing{overflow:hidden}
+body.introing .entry.fx.in{animation-play-state:paused!important}
+#intro{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;overflow:hidden;
+ background:radial-gradient(900px 500px at 10% -5%,#fff 0,transparent 60%),radial-gradient(700px 600px at 100% 25%,#ffc2da 0,transparent 60%),radial-gradient(800px 700px at 0% 90%,#ffd3e5 0,transparent 60%),linear-gradient(160deg,#fff6fa,#ffe0ec);
+ transition:opacity .8s,transform .8s cubic-bezier(.4,0,.2,1)}
+#intro.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#intro.gone{display:none}
+.ih{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ih span{position:absolute;bottom:-60px;color:rgba(255,111,165,.3);animation:rise 16s linear infinite}
+.ibox{position:relative;z-index:1;width:min(560px,100%);max-height:calc(100vh - 40px);overflow:auto;text-align:center;padding:26px 24px 24px;border-radius:30px;
+ background:rgba(255,255,255,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:2px solid #fff;
+ box-shadow:0 1px 0 #fff inset,0 26px 40px -18px rgba(224,70,127,.5),0 6px 14px rgba(90,42,60,.08);animation:up .9s backwards}
+.ibox svg{width:84px;height:auto;display:block;margin:-4px auto 12px;filter:drop-shadow(0 8px 14px rgba(224,70,127,.45));animation:ibeat 1.3s ease-in-out infinite}
+@keyframes ibeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+#intxt{margin:0;font-size:clamp(1.05rem,4.3vw,1.3rem);line-height:1.95;font-weight:600;color:var(--ink)}
+#intxt .rest{visibility:hidden}
+#intxt .ty::after{content:'';border-right:2px solid var(--pink);margin-right:-2px;animation:blink .8s steps(1) infinite}
+#intxt.done .ty::after{display:none}
+#inGo{margin-top:18px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .6s,transform .6s}
+#inGo.show{opacity:1;transform:none;pointer-events:auto}
+#inSkip{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;padding:7px 18px;font-size:.9rem}
+@media(prefers-reduced-motion:reduce){.ih{display:none}.ibox svg{animation:none}}
 </style>
 </head>
-<body>
+<body class="introing">
+<div id="intro" role="dialog" aria-modal="true" aria-label="ข้อความถึงอ้วน">
+ <div class="ih" aria-hidden="true"><span style="left:82%;font-size:26px;animation-duration:24s;animation-delay:-5s">&#9829;</span><span style="left:91%;font-size:38px;animation-duration:21s;animation-delay:-0s">&#9829;</span><span style="left:62%;font-size:25px;animation-duration:23s;animation-delay:-0s">&#9829;</span><span style="left:23%;font-size:21px;animation-duration:18s;animation-delay:-7s">&#9829;</span><span style="left:34%;font-size:30px;animation-duration:21s;animation-delay:-1s">&#9829;</span><span style="left:76%;font-size:25px;animation-duration:13s;animation-delay:-11s">&#9829;</span><span style="left:30%;font-size:31px;animation-duration:17s;animation-delay:-2s">&#9829;</span><span style="left:52%;font-size:23px;animation-duration:14s;animation-delay:-2s">&#9829;</span><span style="left:82%;font-size:37px;animation-duration:20s;animation-delay:-2s">&#9829;</span><span style="left:19%;font-size:18px;animation-duration:13s;animation-delay:-3s">&#9829;</span></div>
+ <button class="ghost" id="inSkip" type="button">ข้าม ›</button>
+ <div class="ibox">
+  <svg viewBox="-0.7 -0.6 1.4 1.1" aria-hidden="true"><defs><radialGradient id="ig" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffc2da"/><stop offset=".55" stop-color="#ff6fa5"/><stop offset="1" stop-color="#e0467f"/></radialGradient></defs><path d="M0 .4C-.9 -.1 -.5 -.75 0 -.3C.5 -.75 .9 -.1 0 .4Z" fill="url(#ig)"/></svg>
+  <p id="intxt">อ้วนอาจเป็นแค่ผู้หญิงคนหนึ่งสำหรับคนอื่น แต่สำหรับเค้า อ้วนคือโลกทั้งใบที่เค้าอยากมีอ้วนอยู่ในทุก ๆ วัน ไม่ต้องสวยที่สุด ไม่ต้องสมบูรณ์แบบ แค่เป็นอ้วนคนเดิมที่เค้าได้รักและดูแลก็พอ เค้าไม่รู้ว่าอนาคตจะเป็นยังไง แต่เค้ารู้ว่าทุกครั้งที่มองไปข้างหน้า เค้ายังอยากมีอ้วนอยู่ข้าง ๆ เสมอ เพราะอ้วนคือผู้หญิงคนเดียวที่เค้าอยากรักไปนาน ๆ และรักหมดทั้งหัวใจ</p>
+  <button id="inGo" type="button">เข้าไปอ่านไดอารี่ 💕</button>
+ </div>
+</div>
+<script>
+(()=>{
+const o=document.getElementById('intro');
+const R=(a,b)=>a+Math.random()*(b-a);
+try{
+ const p=document.getElementById('intxt'),full=p.textContent.trim(),skip=document.getElementById('inSkip'),go=document.getElementById('inGo');
+ const segs=window.Intl&&Intl.Segmenter?[...new Intl.Segmenter('th',{granularity:'grapheme'}).segment(full)].map(x=>x.segment):Array.from(full);
+ const mk=c=>{const e=document.createElement('span');if(c)e.className=c;return e};
+ p.textContent='';
+ const sr=mk('sr'),box=mk(),ty=mk('ty'),rest=mk('rest');
+ sr.textContent=full;box.setAttribute('aria-hidden','true');box.append(ty,rest);p.append(sr,box);
+ const paint=n=>{ty.textContent=segs.slice(0,n).join('');rest.textContent=segs.slice(n).join('')};
+ paint(0);
+ let i=0,timer=0,closed=false;
+ const key=e=>{if(e.key==='Escape')close()};
+ function close(){
+  if(closed)return;closed=true;clearTimeout(timer);document.removeEventListener('keydown',key);
+  document.body.classList.remove('introing');o.classList.add('out');
+  document.dispatchEvent(new Event('introclose'));
+  setTimeout(()=>o.classList.add('gone'),900);
+ }
+ function tick(){
+  if(closed)return;
+  if(i>=segs.length){p.classList.add('done');timer=setTimeout(()=>go.classList.add('show'),500);return}
+  i++;paint(i);
+  const ch=segs[i-1];let d=R(24,46);
+  if(ch===' ')d+=150;
+  if(i===segs.length-1)d+=450;
+  timer=setTimeout(tick,d);
+ }
+ skip.onclick=close;go.onclick=close;document.addEventListener('keydown',key);
+ const fonts=document.fonts&&document.fonts.load?Promise.race([document.fonts.load('600 20px Mali',full),new Promise(r=>setTimeout(r,1500))]):Promise.resolve();
+ fonts.catch(()=>{}).then(()=>{if(!closed)timer=setTimeout(tick,800)});
+ try{skip.focus({preventScroll:true})}catch(e){}
+}catch(e){
+ o.classList.add('gone');document.body.classList.remove('introing');document.dispatchEvent(new Event('introclose'));
+}
+})();
+</script>
 <div class="hearts" aria-hidden="true"><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span></div>
 <div class="wrap">
 <header>
  <h1>💕 ไดอารี่ของผมถึงมะปราง💕</h1>
- <p class="sub">อ้วนก็เป็นแค่ผู้หญิงคนหนึ่ง แต่สำหรับเค้า อ้วนคือโลกทั้งใบที่เค้าอยากมีอ้วนอยู่ในทุก ๆ วัน ไม่ต้องสวยที่สุด ไม่ต้องสมบูรณ์แบบ แค่เป็นอ้วนคนเดิมที่เค้าได้รักและดูแลก็พอ เค้าไม่รู้ว่าอนาคตจะเป็นยังไง แต่เค้ารู้ว่าทุกครั้งที่มองไปข้างหน้า เค้ายังอยากมีอ้วนอยู่ข้าง ๆ เสมอ เพราะอ้วนคือผู้หญิงคนเดียวที่เค้าอยากรักไปนาน ๆ และรักหมดทั้งหัวใจ ❤️</p>
+ <p class="sub">รักอ้วนนะ ❤️</p>
  <div class="bar">
   <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
   <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
@@ -1211,7 +1283,7 @@ if(msg)new MutationObserver(()=>{
  }
 }).observe(msg,{childList:true,characterData:true,subtree:true});
 /* เปิดหน้าเว็บแล้วมีหัวใจโปรยต้อนรับ */
-setTimeout(()=>rain(16),500);
+{const g=document.getElementById('intro');if(g&&!g.classList.contains('out')&&!g.classList.contains('gone'))document.addEventListener('introclose',()=>setTimeout(()=>rain(18),350),{once:true});else setTimeout(()=>rain(16),500)}
 
 /* เอนทรีเด้งเข้ามาตอนเลื่อนถึง */
 const list=document.getElementById('list');
@@ -1262,8 +1334,9 @@ function start(delay){tok++;clearTimeout(timer);i=0;p.classList.remove('done');p
 p.addEventListener('click',()=>{if(p.classList.contains('done'))start(250);else done()});
 paint(0);
 let go=false;const begin=()=>{if(go)return;go=true;start(700)};
-setTimeout(begin,1800);
-(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(begin,begin);
+const gate=document.getElementById('intro');
+if(gate&&!gate.classList.contains('out')&&!gate.classList.contains('gone')){document.addEventListener('introclose',begin,{once:true})}
+else{setTimeout(begin,1800);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(begin,begin)}
 })();
 </script>
 </body>
