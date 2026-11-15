@@ -185,6 +185,44 @@ select{font:inherit;color:var(--ink);width:100%;border:1.5px solid var(--line);b
 .dl{display:inline-block;text-decoration:none;font-weight:600;border-radius:999px;padding:9px 22px;background:linear-gradient(180deg,#ff8dba,var(--pink));color:#fff;box-shadow:0 4px 0 var(--deep),0 9px 14px rgba(224,70,127,.35)}
 .dl:active{transform:translateY(3px);box-shadow:0 1px 0 var(--deep)}
 #vid input[type=file]{padding:8px 10px}
+
+/* ---- เอฟเฟกต์น่ารักๆ ---- */
+header{position:relative;animation:up .8s backwards}
+.form{animation:up .8s .15s backwards}
+h1{animation:bob 4.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-7px) rotate(.7deg)}}
+.sub{background:linear-gradient(100deg,var(--soft) 0 40%,#ff6fa5 50%,var(--soft) 60% 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 5s linear infinite}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+.sp{position:absolute;font-style:normal;color:#fff;text-shadow:0 0 8px #ff6fa5,0 0 18px #ff9cc2;pointer-events:none;animation:tw 2.6s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15;transform:scale(.5) rotate(0)}50%{opacity:1;transform:scale(1.25) rotate(45deg)}}
+.twinkles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.twinkles i{position:absolute;font-style:normal;color:#fff;text-shadow:0 0 6px #ff6fa5,0 0 14px rgba(255,111,165,.6);animation:tw 3s ease-in-out infinite}
+.hearts span.v{bottom:-60px}
+.hearts span.v2{color:rgba(255,255,255,.55)}
+.hearts span.v3{color:rgba(224,70,127,.2)}
+@keyframes ring{0%,100%{box-shadow:0 4px 10px rgba(224,70,127,.55),0 0 0 6px rgba(255,156,194,.3)}50%{box-shadow:0 4px 10px rgba(224,70,127,.55),0 0 0 12px rgba(255,156,194,.06)}}
+.entry::after{animation:ring 2.6s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 10px rgba(255,111,165,.4)}50%{box-shadow:0 0 22px rgba(255,111,165,.85)}}
+.timeline::before{animation:glow 3s ease-in-out infinite}
+@keyframes fxl{from{opacity:0;transform:translate(-60px,30px) rotate(-6deg) scale(.88)}55%{opacity:1}}
+@keyframes fxr{from{opacity:0;transform:translate(60px,30px) rotate(6deg) scale(.88)}55%{opacity:1}}
+.entry.fx{opacity:0}
+.entry.fx.in{opacity:1}
+.entry.fx.in.l{animation:fxl .95s cubic-bezier(.2,1.35,.4,1) backwards}
+.entry.fx.in.r{animation:fxr .95s cubic-bezier(.2,1.35,.4,1) backwards}
+@keyframes jig{25%{transform:rotate(-3deg) scale(1.05)}75%{transform:rotate(3deg) scale(1.05)}}
+.form button:not(:disabled):hover,.bar button:hover,.sorter button:hover,.actions button:not(:disabled):hover{animation:jig .5s}
+input:focus,textarea:focus,select:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,111,165,.2),inset 0 2px 5px rgba(224,70,127,.1)}
+.photos figure::after{content:'\2665';position:absolute;right:8px;bottom:-1px;color:#ff6fa5;font-size:18px;line-height:1;opacity:0;transform:scale(.3);transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1);pointer-events:none}
+.photos figure:hover::after{opacity:1;transform:scale(1) rotate(-12deg)}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+#sbar{position:fixed;top:0;left:0;right:0;height:5px;z-index:45;pointer-events:none}
+#sbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb3d1,#ff6fa5,#e0467f);border-radius:0 5px 5px 0}
+#sbar b{position:absolute;top:-4px;left:0;margin-left:-8px;color:#e0467f;font-size:16px;line-height:1;text-shadow:0 0 6px #fff;animation:hb 1s ease-in-out infinite}
+@keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+#up{position:fixed;right:16px;bottom:18px;z-index:44;width:48px;height:48px;padding:0;font-size:20px;display:grid;place-items:center;opacity:0;transform:translateY(20px) scale(.6);pointer-events:none;transition:opacity .3s,transform .4s cubic-bezier(.2,1.6,.4,1)}
+#up.show{opacity:1;transform:none;pointer-events:auto}
+@media(prefers-reduced-motion:reduce){h1,.sub,.sp,.twinkles i,.entry::after,.timeline::before,#sbar b{animation:none}.sub{color:var(--soft);background:none}.entry.fx{opacity:1}.entry.fx.in.l,.entry.fx.in.r{animation:none}.twinkles{display:none}}
 </style>
 </head>
 <body>
@@ -1086,6 +1124,107 @@ async function start(){
  if(wl){try{wl.release()}catch(e){}}
  $('vFill').style.width='0';V.busy=false;V.cancel=false;
 }
+})();
+
+/* ================= เอฟเฟกต์น่ารักๆ ================= */
+(()=>{
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const R=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const body=document.body;
+
+/* ดาวระยิบระยับรอบหัวเรื่อง + ทั้งหน้า + ของลอยเพิ่ม */
+const hd=document.querySelector('header');
+[[8,18,16],[90,10,20],[18,78,14],[82,70,18],[50,-6,14],[96,45,12],[2,48,13]].forEach(([x,y,s],i)=>{
+ const e=document.createElement('i');e.className='sp';e.textContent='✦';
+ e.style.cssText=`left:${x}%;top:${y}%;font-size:${s}px;animation-delay:${-i*.55}s`;hd.append(e);
+});
+const tw=document.createElement('div');tw.className='twinkles';tw.setAttribute('aria-hidden','true');
+for(let i=0;i<26;i++){const e=document.createElement('i');e.textContent=pick(['✦','✧','✦','·']);
+ e.style.cssText=`left:${R(0,100)}%;top:${R(0,100)}%;font-size:${R(8,18)}px;animation-duration:${R(2.4,5)}s;animation-delay:${-R(0,5)}s`;tw.append(e)}
+body.prepend(tw);
+const hs=document.querySelector('.hearts');
+if(hs)for(let i=0;i<12;i++){const e=document.createElement('span');e.className='v '+pick(['','v2','v3']);e.textContent=pick(['♥','✿','❀','♡','✦']);
+ e.style.cssText=`left:${R(2,98)}%;font-size:${R(14,36)}px;animation-duration:${R(15,28)}s;animation-delay:${-R(0,20)}s`;hs.append(e)}
+
+if(RM)return;
+
+/* ผืนผ้าใบอนุภาค (หัวใจ/ดาว) */
+const cv=document.createElement('canvas');cv.id='fx';cv.setAttribute('aria-hidden','true');body.append(cv);
+const c=cv.getContext('2d');let W=0,H=0;
+const fit=()=>{const d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;c.setTransform(d,0,0,d,0,0)};
+fit();addEventListener('resize',fit);
+const COL=['#ff6fa5','#ff9cc2','#ffb3d1','#e0467f','#ff85b3','#ffd1e3'];
+const P=[];let run=false,last=0;
+function heart(x,y,s){c.beginPath();c.moveTo(x,y+s*.4);c.bezierCurveTo(x-s*.9,y-s*.1,x-s*.5,y-s*.75,x,y-s*.3);c.bezierCurveTo(x+s*.5,y-s*.75,x+s*.9,y-s*.1,x,y+s*.4);c.closePath()}
+function star(x,y,s){c.beginPath();c.moveTo(x,y-s);c.quadraticCurveTo(x,y,x+s,y);c.quadraticCurveTo(x,y,x,y+s);c.quadraticCurveTo(x,y,x-s,y);c.quadraticCurveTo(x,y,x,y-s);c.closePath()}
+function add(o){if(P.length>420)P.shift();P.push(Object.assign({life:0,rot:R(-.6,.6),vr:R(-2,2),sway:0,sp:0},o));if(!run){run=true;last=performance.now();requestAnimationFrame(loop)}}
+function loop(t){
+ const dt=Math.min(.05,(t-last)/1000);last=t;c.clearRect(0,0,W,H);
+ for(let i=P.length-1;i>=0;i--){
+  const p=P[i];p.life+=dt;if(p.life>=p.max||p.y>H+40){P.splice(i,1);continue}
+  p.vy+=p.g*dt;p.vx*=1-.6*dt;p.x+=p.vx*dt+Math.sin(p.life*p.sp)*p.sway*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt;
+  const k=p.life/p.max,a=k<.12?k/.12:1-Math.pow((k-.12)/.88,1.6),s=p.r*(k<.12?.4+k/.12*.6:1-.35*k);
+  c.save();c.globalAlpha=Math.max(0,a);c.translate(p.x,p.y);c.rotate(p.rot);c.fillStyle=p.col;
+  if(p.t){star(0,0,s*1.1)}else heart(0,0,s);c.fill();c.restore();
+ }
+ if(P.length)requestAnimationFrame(loop);else run=false;
+}
+function burst(x,y,n=10,pw=260,big=1){
+ for(let i=0;i<n;i++){const a=R(0,6.283),v=pw*R(.35,1);
+  add({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-pw*.35,g:380,r:R(7,15)*big,col:pick(COL),t:Math.random()<.3,max:R(.9,1.5)})}
+}
+function rain(n=40){
+ for(let i=0;i<n;i++)setTimeout(()=>add({x:R(0,W),y:-20,vx:R(-30,30),vy:R(70,170),g:30,r:R(8,19),col:pick(COL),t:Math.random()<.25,max:R(3.2,5),sway:R(30,70),sp:R(2,4)}),i*45);
+}
+/* หางหัวใจตามเมาส์ */
+let lx=-99,ly=-99;
+addEventListener('pointermove',e=>{
+ if(e.pointerType==='touch')return;
+ if(Math.hypot(e.clientX-lx,e.clientY-ly)<26)return;lx=e.clientX;ly=e.clientY;
+ add({x:lx,y:ly,vx:R(-25,25),vy:R(-45,-15),g:70,r:R(4,8),col:pick(COL),t:Math.random()<.4,max:R(.6,1)});
+},{passive:true});
+/* แตะ/คลิกแล้วหัวใจแตกกระจาย */
+addEventListener('pointerdown',e=>{
+ if(e.target.closest&&e.target.closest('input,textarea,select'))return;
+ burst(e.clientX,e.clientY,9,240);
+},{passive:true});
+/* พิมพ์แล้วมีหัวใจเล็กๆ ลอยขึ้น */
+const tx=document.getElementById('text');let tl=0;
+if(tx)tx.addEventListener('input',()=>{
+ const n=performance.now();if(n-tl<140)return;tl=n;
+ const r=tx.getBoundingClientRect();
+ add({x:r.right-R(20,60),y:r.bottom-18,vx:R(-20,20),vy:R(-90,-50),g:-20,r:R(5,9),col:pick(COL),t:Math.random()<.3,max:R(1.1,1.7),sway:R(10,25),sp:R(3,5)});
+});
+/* บันทึกสำเร็จ: ฝนหัวใจ */
+const msg=document.getElementById('msg'),sv=document.getElementById('save');
+if(msg)new MutationObserver(()=>{
+ if(msg.textContent.includes('บันทึกแล้ว')){
+  const b=sv.getBoundingClientRect();burst(b.left+b.width/2,b.top+b.height/2,34,420,1.3);rain(34);
+ }
+}).observe(msg,{childList:true,characterData:true,subtree:true});
+/* เปิดหน้าเว็บแล้วมีหัวใจโปรยต้อนรับ */
+setTimeout(()=>rain(16),500);
+
+/* เอนทรีเด้งเข้ามาตอนเลื่อนถึง */
+const list=document.getElementById('list');
+if('IntersectionObserver'in window&&list){
+ const io=new IntersectionObserver(es=>{
+  let k=0;
+  es.forEach(e=>{if(e.isIntersecting){e.target.style.animationDelay=(k++*.09)+'s';e.target.classList.add('in');io.unobserve(e.target)}});
+ },{threshold:.1,rootMargin:'0px 0px -30px 0px'});
+ const prep=el=>{if(!el.classList||!el.classList.contains('entry')||el.dataset.fx)return;el.dataset.fx=1;el.classList.add('fx');io.observe(el)};
+ new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(prep))).observe(list,{childList:true});
+ list.querySelectorAll('.entry').forEach(prep);
+}
+
+/* แถบความคืบหน้าการเลื่อน + ปุ่มกลับขึ้นบน */
+const sb=document.createElement('div');sb.id='sbar';sb.setAttribute('aria-hidden','true');sb.innerHTML='<i></i><b>♥</b>';body.append(sb);
+const up=document.createElement('button');up.id='up';up.type='button';up.textContent='♥';up.setAttribute('aria-label','กลับขึ้นด้านบน');body.append(up);
+const bi=sb.firstChild,bh=sb.lastChild;let tk=false;
+const sc=()=>{tk=false;const m=document.documentElement.scrollHeight-innerHeight,p=m>0?Math.min(1,scrollY/m):0;
+ bi.style.width=(p*100)+'%';bh.style.left=(p*100)+'%';up.classList.toggle('show',scrollY>700)};
+addEventListener('scroll',()=>{if(!tk){tk=true;requestAnimationFrame(sc)}},{passive:true});sc();
+up.onclick=()=>{const b=up.getBoundingClientRect();burst(b.left+24,b.top+24,12,260);scrollTo({top:0,behavior:'smooth'})};
 })();
 </script>
 </body>
