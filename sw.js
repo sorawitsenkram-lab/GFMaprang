@@ -1,0 +1,16 @@
+/* service worker: เปิดเป็นแอปได้ และโหลดหน้าเว็บล่าสุดเสมอ (ถ้าไม่มีเน็ตจะใช้ของที่เคยเปิดไว้) */
+const CACHE='diary-v1';
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',e=>{
+  const r=e.request;
+  if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return; /* ข้อมูลบันทึกมาจากที่อื่น ไม่ยุ่ง จึงอัปเดตเรียลไทม์เหมือนเดิม */
+  e.respondWith(
+    fetch(r).then(res=>{
+      if(res.ok){const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp))}
+      return res;
+    }).catch(()=>caches.match(r).then(m=>m||caches.match('./')))
+  );
+});
