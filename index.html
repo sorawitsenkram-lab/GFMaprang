@@ -84,13 +84,6 @@ dialog::backdrop{background:rgba(90,42,60,.45);backdrop-filter:blur(3px)}
 dialog h2{margin:0 0 6px;color:var(--pink)}
 dialog small{display:block;color:var(--soft);margin:4px 0 10px}
 #lb{max-width:96vw;width:auto;padding:8px;background:#fff}#lb img{max-width:100%;max-height:88vh;display:block;border-radius:12px}
-@media(max-width:760px){
- .timeline{grid-template-columns:1fr;padding-left:34px;column-gap:0;perspective:none}
- .timeline::before{left:12px;margin-left:0}
- .l,.r{grid-column:1}
- .entry:not(:first-child){margin-top:0}
- .l::after,.r::after{left:-32px;right:auto}
-}
 @media(prefers-reduced-motion:reduce){.hearts{display:none}.entry.new{animation:none}}
 .dwrap{position:relative}
 .datebtn{width:100%;text-align:left;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:16px;color:var(--ink);font-weight:600;
@@ -164,6 +157,24 @@ dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
 .pbtn::before{content:'\25B6'}
 .playing .pbtn::before{content:'\275A\275A'}
 @media(prefers-reduced-motion:reduce){.vinyl{animation:none}.arm{transition:none}}
+/* ===== มือถือ: คงรูปแบบซ้าย-ขวาสลับกัน ===== */
+@media(max-width:760px){
+ .wrap{padding:20px 12px 80px}
+ h1{font-size:2.1rem}
+ .form{padding:16px;border-radius:24px}
+ .timeline{grid-template-columns:1fr;column-gap:0;row-gap:42px;perspective:none;padding-top:16px}
+ .timeline::before{left:50%;margin-left:-3px}
+ .l,.r{grid-column:1}
+ .entry{width:88%;padding:20px 16px 16px}
+ .entry:not(:first-child){margin-top:0}
+ .l{justify-self:start}.r{justify-self:end}
+ .entry::after{top:-15px;margin-left:-13px;right:auto}
+ .l::after{left:56.82%}.r::after{left:43.18%}
+ .entry time{font-size:.85rem;white-space:normal;max-width:calc(100% - 46px)}
+ .photos figure{flex:1 1 120px}
+ .disc{gap:12px;padding:12px}
+ .vwrap{width:92px;height:92px;margin-right:10px}
+}
 </style>
 </head>
 <body>
