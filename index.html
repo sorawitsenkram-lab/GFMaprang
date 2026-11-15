@@ -290,6 +290,23 @@ body.introing .entry.fx.in{animation-play-state:paused!important}
 .bar button[hidden]{display:none}
 #dts input[type=date]{width:100%}
 #dts .row{display:flex;gap:10px}#dts .row select{flex:1}
+
+/* ---- ปุ่มหัวใจกดได้ + สุ่มความทรงจำ ---- */
+.entry::before{display:none}
+.entry{padding-bottom:54px}
+.entry .hrt{position:absolute;right:10px;bottom:8px;z-index:3;min-width:46px;height:44px;padding:0 12px;display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;background:none;box-shadow:none;filter:none;transform:none;color:rgba(255,111,165,.5);font:700 .95rem 'Mali',sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.entry .hrt:hover,.entry .hrt:active{background:none;box-shadow:none;filter:none;transform:none}
+.entry .hrt .hi{font-size:30px;line-height:1;transition:transform .2s,color .2s}
+.entry .hrt:hover .hi{transform:scale(1.12)}
+.entry .hrt:active .hi{transform:scale(.9)}
+.entry .hrt.on{color:#e0367f}
+.entry .hrt.on .hi{color:#ff3d86;text-shadow:0 2px 8px rgba(255,61,134,.45)}
+.entry .hrt.pop .hi{animation:hpop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes hpop{0%{transform:scale(1)}40%{transform:scale(1.55)}100%{transform:scale(1)}}
+.hfly{position:absolute;right:24px;bottom:36px;z-index:4;pointer-events:none;color:#ff3d86;font-size:22px;animation:hfly .9s ease-out forwards}
+@keyframes hfly{from{opacity:1;transform:translateY(0) scale(.8)}to{opacity:0;transform:translateY(-70px) scale(1.4)}}
+.entry.flash{box-shadow:0 0 0 4px #ff6fa5,0 0 34px 8px rgba(255,111,165,.85)!important;transition:box-shadow .4s}
+@media(prefers-reduced-motion:reduce){.entry .hrt.pop .hi,.hfly{animation:none}}
 </style>
 </head>
 <body class="introing">
@@ -381,7 +398,7 @@ try{
  <div class="bar">
   <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
   <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
-  <button class="ghost" id="openVid" type="button">🎬 สร้างคลิป</button><button class="ghost" id="openDates" type="button">💞 ตั้งวันที่</button><button class="ghost" id="openInst" type="button" hidden>📲 ติดตั้งแอป</button>
+  <button class="ghost" id="openVid" type="button">🎬 สร้างคลิป</button><button class="ghost" id="openMem" type="button">🎲 สุ่มความทรงจำ</button><button class="ghost" id="openDates" type="button">💞 ตั้งวันที่</button><button class="ghost" id="openInst" type="button" hidden>📲 ติดตั้งแอป</button>
  </div>
 </header>
 
@@ -516,6 +533,7 @@ let token=store.get('cd_token')||sget('cd_tok'), entries=[], lastRaw=null, newes
 function sget(k){try{return sessionStorage.getItem(k)||''}catch(e){return ''}}
 let seen=null,toastT;
 let localAdds=new Map(),localDels=new Map();const HOLD=300000;
+const hPend={},hTimer={};let heartHold={};try{heartHold=JSON.parse(store.get('cd_h')||'{}')}catch(e){}
 try{const o=JSON.parse(store.get('cd_local')||'{}');localAdds=new Map(o.adds||[]);localDels=new Map(o.dels||[])}catch(e){}
 function saveLocal(){store.set('cd_local',JSON.stringify({adds:[...localAdds],dels:[...localDels]}))}
 function mergeLocal(remote){
@@ -523,7 +541,7 @@ function mergeLocal(remote){
  for(const [id,v] of [...localAdds]){if(ids.has(id)||now-v.t>HOLD){localAdds.delete(id);ch=true}else list.push(v.e)}
  for(const [id,t] of [...localDels]){if(!ids.has(id)||now-t>HOLD){localDels.delete(id);ch=true}else list=list.filter(e=>e.id!==id)}
  if(ch)saveLocal();
- return list;
+ return applyHold(list);
 }
 const ready=()=>cfg.owner&&cfg.repo;
 const api=p=>`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`;
@@ -557,7 +575,7 @@ async function load(){
  try{
   const txt=await readData();
   const list=mergeLocal(txt===null?[]:JSON.parse(txt)),sig=JSON.stringify(list);
-  if(sig!==lastRaw){const had=lastRaw!==null,old=new Set(entries.map(e=>e.id));lastRaw=sig;entries=list;const add=entries.filter(e=>!old.has(e.id));render();if(had&&add.length)toast('มีบันทึกใหม่ '+add.length+' รายการ 💕')}
+  if(sig!==lastRaw){const had=lastRaw!==null,old=new Set(entries.map(e=>e.id)),oh=new Map(entries.map(e=>[e.id,e.hearts||0]));lastRaw=sig;entries=list;const add=entries.filter(e=>!old.has(e.id));render();if(had&&add.length)toast('มีบันทึกใหม่ '+add.length+' รายการ 💕');else if(had&&entries.some(e=>oh.has(e.id)&&(e.hearts||0)>oh.get(e.id)))toast('มีคนกดหัวใจให้บันทึก 💗')}
   fails=0;
   setLive(true,txt===null&&!list.length?'ยังไม่พบไฟล์บันทึก (ถ้าเคยเขียนแล้ว เช็กชื่อ repo/branch และตั้ง repo เป็น Public)':'เรียลไทม์ · เช็กล่าสุด '+new Date().toLocaleTimeString('th-TH'));
  }catch(e){fails++;setLive(false,'เชื่อมต่อไม่ได้ ('+e.message+') จะลองใหม่เอง')}
@@ -573,7 +591,7 @@ function render(){
   d.textContent=ready()?'ยังไม่มีบันทึก เขียนเรื่องแรกของเราด้านบนได้เลย':'กดปุ่มตั้งค่าเพื่อเชื่อมต่อ GitHub ก่อน';box.append(d);return}
  const s=[...entries].sort((a,b)=>(a.date===b.date?(a.created||0)-(b.created||0):a.date<b.date?-1:1)*(newestFirst?-1:1));
  for(const [n,e] of s.entries()){
-  const a=document.createElement('article');a.className='entry '+(n%2?'r':'l')+(!prevSeen||!prevSeen.has(e.id)?' new':'');a.style.gridRow=n+1;
+  const a=document.createElement('article');a.className='entry '+(n%2?'r':'l')+(!prevSeen||!prevSeen.has(e.id)?' new':'');a.style.gridRow=n+1;a.dataset.id=e.id;
   const t=document.createElement('time');t.dateTime=e.date;
   const [y,m,d]=e.date.split('-').map(Number);
   t.textContent=new Date(y,m-1,d).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -588,7 +606,7 @@ function render(){
     i.onclick=()=>{$('lbImg').src=i.src;$('lb').showModal()};f.append(i);ph.append(f)}
    a.append(ph);
   }
-  const x=document.createElement('button');x.className='del';x.type='button';x.textContent='ลบ';
+  heartBtn(a,e);const x=document.createElement('button');x.className='del';x.type='button';x.textContent='ลบ';
   x.onclick=()=>removeEntry(e.id);a.append(x);
   box.append(a);
  }
@@ -1425,7 +1443,7 @@ try{document.getElementById('lb').addEventListener('click',()=>document.getEleme
 /* ---- ตัวนับวัน (ตั้งวันที่ครั้งเดียว เก็บไว้ที่ data/settings.json ทุกคนเห็นเหมือนกัน) ---- */
 const HER='มะปราง', SET_PATH='data/settings.json';
 let love={start:'',bday:''};
-try{const o=JSON.parse(store.get('cd_love')||'{}');if(o&&typeof o==='object')love={start:o.start||'',bday:o.bday||''}}catch(e){}
+try{const o=JSON.parse(store.get('cd_love')||'{}');if(o&&typeof o==='object')love={start:o.start||'',bday:o.bday||'',updated:o.updated||0}}catch(e){}
 const MON=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const dayDiff=(a,b)=>Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/864e5);
 function nextOcc(m,d,now){let t=new Date(now.getFullYear(),m,d);if(dayDiff(now,t)<0)t=new Date(now.getFullYear()+1,m,d);return t}
@@ -1452,10 +1470,15 @@ function renderCount(now=new Date()){
 }
 async function loadLove(){
  if(!ready())return;
+ let o=null,fresh=false;
+ /* อ่านจาก GitHub API ก่อน (สดเสมอ) ถ้าไม่ได้ค่อยใช้ raw ซึ่งอาจค้างของเก่าได้ราว 5 นาที */
  try{
-  const r=await fetch(rawUrl(SET_PATH)+'?t='+Date.now(),{cache:'no-store'});
-  if(r.ok){const o=await r.json();love={start:o.start||'',bday:o.bday||''};store.set('cd_love',JSON.stringify(love))}
+  const h={Accept:'application/vnd.github.raw+json'};if(token)h.Authorization='Bearer '+token;
+  const r=await fetch(api(SET_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:h,cache:'no-cache'});
+  if(r.ok){o=JSON.parse(await r.text());fresh=true}
  }catch(e){}
+ if(!o){try{const r=await fetch(rawUrl(SET_PATH)+'?t='+Date.now(),{cache:'no-store'});if(r.ok)o=await r.json()}catch(e){}}
+ if(o&&(fresh||(o.updated||0)>=(love.updated||0))){love={start:o.start||'',bday:o.bday||'',updated:o.updated||0};store.set('cd_love',JSON.stringify(love))}
  renderCount();
 }
 async function putJson(path,obj,msg){
@@ -1485,7 +1508,7 @@ $('dSave').onclick=async()=>{
  if(!token&&!(await openAuth()))return;
  const btn=$('dSave');btn.disabled=true;err('กำลังบันทึก...');
  try{
-  const nv={start,bday:mo?String(mo).padStart(2,'0')+'-'+String(da).padStart(2,'0'):''};
+  const nv={start,bday:mo?String(mo).padStart(2,'0')+'-'+String(da).padStart(2,'0'):'',updated:Date.now()};
   await putJson(SET_PATH,nv,'ตั้งวันสำคัญ');
   love=nv;store.set('cd_love',JSON.stringify(love));renderCount();$('dts').close();toast('บันทึกวันสำคัญแล้ว 💕');
  }catch(e){err(e.message)}
@@ -1511,6 +1534,79 @@ $('openInst').onclick=async()=>{
  $('inst').showModal();
 };
 $('instOk').onclick=()=>$('inst').close();
+
+/* ---- หัวใจกดได้ (เก็บเป็นจำนวนในแต่ละบันทึก) ---- */
+function applyHold(list){
+ const now=Date.now();let ch=false;
+ for(const id in heartHold)if(now-heartHold[id].t>HOLD){delete heartHold[id];ch=true}
+ if(ch)store.set('cd_h',JSON.stringify(heartHold));
+ return list.map(e=>{const h=heartHold[e.id];return h&&(e.hearts||0)<h.n?{...e,hearts:h.n}:e});
+}
+const hCount=e=>(e.hearts||0)+(hPend[e.id]||0);
+function paintHeart(id,b,e){
+ b=b||document.querySelector('.hrt[data-id="'+CSS.escape(String(id))+'"]');e=e||entries.find(x=>x.id===id);
+ if(!b||!e)return;
+ const n=hCount(e);
+ b.querySelector('b').textContent=n||'';b.classList.toggle('on',n>0);
+ b.setAttribute('aria-label',n?'หัวใจ '+n+' ดวง กดเพื่อส่งเพิ่ม':'ส่งหัวใจให้บันทึกนี้');
+}
+function heartBtn(a,e){
+ const b=document.createElement('button');b.type='button';b.className='hrt';b.dataset.id=e.id;
+ b.innerHTML='<span class="hi">♥</span><b></b>';
+ a.append(b);paintHeart(e.id,b,e);
+ b.onclick=()=>tapHeart(e.id,b);
+}
+async function tapHeart(id,b){
+ if(!ready()){$('set').showModal();return}
+ if(!token&&!(await openAuth()))return;
+ hPend[id]=(hPend[id]||0)+1;paintHeart(id,b);
+ b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');
+ const f=document.createElement('span');f.className='hfly';f.textContent='♥';f.setAttribute('aria-hidden','true');
+ b.parentElement.append(f);setTimeout(()=>f.remove(),950);
+ clearTimeout(hTimer[id]);hTimer[id]=setTimeout(()=>flushHeart(id),1200);
+}
+async function flushHeart(id){
+ const n=hPend[id]||0;if(!n)return;
+ try{
+  const list=await commit(l=>l.map(e=>e.id===id?{...e,hearts:(e.hearts||0)+n}:e),'ส่งหัวใจ ♥');
+  hPend[id]=(hPend[id]||0)-n;entries=list;lastRaw=JSON.stringify(entries);
+  const ne=list.find(x=>x.id===id);
+  if(ne){heartHold[id]={n:ne.hearts||0,t:Date.now()};store.set('cd_h',JSON.stringify(heartHold))}
+  paintHeart(id);
+ }catch(e){hPend[id]=(hPend[id]||0)-n;paintHeart(id);toast('ส่งหัวใจไม่สำเร็จ: '+e.message)}
+}
+
+/* ---- สุ่มความทรงจำ ---- */
+let lastMem=null;
+function memoryPick(list,now=new Date()){
+ const hits=[];
+ for(const e of list){
+  const [y,m,d]=e.date.split('-').map(Number);
+  if(d!==now.getDate())continue;
+  const months=(now.getFullYear()-y)*12+(now.getMonth()+1-m);
+  if(months<1)continue;
+  hits.push({e,label:months%12===0?'วันนี้เมื่อ '+(months/12)+' ปีก่อน':'วันนี้เมื่อ '+months+' เดือนก่อน'});
+ }
+ if(hits.length)return hits[Math.floor(Math.random()*hits.length)];
+ if(!list.length)return null;
+ const pool=list.length>1?list.filter(e=>e.id!==lastMem):list;
+ return {e:pool[Math.floor(Math.random()*pool.length)],label:'ความทรงจำที่สุ่มได้'};
+}
+function goEntry(id){
+ const el=document.querySelector('article.entry[data-id="'+CSS.escape(String(id))+'"]');
+ if(!el)return;
+ el.scrollIntoView({behavior:'smooth',block:'center'});
+ el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),2600);
+}
+$('openMem').onclick=()=>{
+ const r=memoryPick(entries);
+ if(!r){toast('ยังไม่มีบันทึกให้สุ่ม เขียนเรื่องแรกของเราก่อนนะ 💕');return}
+ lastMem=r.e.id;
+ const [y,m,d]=r.e.date.split('-').map(Number);
+ const t=(r.e.text||'').replace(/\s+/g,' ').trim();
+ toast('💭 '+r.label+' ('+d+' '+MON[m-1]+') '+(t?'"'+(t.length>50?t.slice(0,50)+'…':t)+'"':'(มีรูปหรือเพลง)'));
+ goEntry(r.e.id);
+};
 </script>
 </body>
 </html>
