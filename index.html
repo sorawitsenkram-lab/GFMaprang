@@ -114,14 +114,64 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
 .toast{position:fixed;left:50%;bottom:24px;z-index:50;transform:translate(-50%,30px);opacity:0;pointer-events:none;padding:10px 22px;border-radius:999px;color:#fff;font-weight:600;
  background:linear-gradient(180deg,#ff8dba,var(--pink));box-shadow:0 4px 0 var(--deep),0 12px 22px rgba(224,70,127,.4);transition:opacity .3s,transform .3s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ===== ธีมชมพูเข้มขึ้น ===== */
+:root{--ink:#4a1d31;--soft:#8f4466;--line:#ffb3d0;--deep:#d92f78}
+body{background:radial-gradient(800px 500px at 12% -5%,#ffd9e8 0,transparent 60%),radial-gradient(700px 600px at 100% 30%,#ff8fbd 0,transparent 60%),radial-gradient(900px 700px at 0% 95%,#ff9cc4 0,transparent 60%),linear-gradient(160deg,#ffc0d8,#ff9bc3 55%,#ff86b8);background-attachment:fixed}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(rgba(255,255,255,.38) 2px,transparent 2.6px) 0 0/30px 30px,radial-gradient(rgba(255,255,255,.22) 2px,transparent 2.6px) 15px 15px/30px 30px}
+.hearts span{color:rgba(255,255,255,.55)}
+h1{text-shadow:0 2px 0 #ff9cc2,0 4px 0 #ff7fb1,0 6px 0 #ef5a97,0 8px 0 #d92f78,0 14px 20px rgba(150,20,80,.45)}
+.sub{color:#7a1f48;font-weight:600}
+.live{background:rgba(255,255,255,.6)}
+button{background:linear-gradient(180deg,#ff7ab0,#ff4f93);box-shadow:0 4px 0 #c42569,0 9px 14px rgba(150,20,80,.35)}
+button:active{box-shadow:0 1px 0 #c42569,0 3px 6px rgba(150,20,80,.3)}
+.form{background:linear-gradient(150deg,rgba(255,240,246,.92),rgba(255,205,225,.9));border-color:#ffe3ee}
+input,textarea{background:#fff3f8;border-color:#ffa8cb}
+.datebtn,button.ghost{background:linear-gradient(180deg,#fff4f9,#ffd3e5)}
+.who{padding:9px 14px;border-radius:14px;font-weight:700;color:#fff;background:linear-gradient(180deg,#ff6fa5,#e0367f);box-shadow:0 3px 0 #a81d57,0 6px 10px rgba(150,20,80,.3)}
+.timeline::before{width:6px;margin-left:-3px;background:repeating-linear-gradient(180deg,#fff 0 12px,transparent 12px 20px);box-shadow:0 0 12px rgba(255,255,255,.7)}
+.entry{background:linear-gradient(150deg,#fff1f7 0,#ffd0e2 100%);border:2px solid #ffe6f0;box-shadow:0 1px 0 #fff inset,0 3px 0 #ff9fc6,0 22px 34px -14px rgba(160,20,80,.55),0 6px 12px rgba(90,42,60,.1)}
+.entry::before{color:rgba(217,47,120,.13)}
+.entry time{background:linear-gradient(180deg,#ff5fa0,#e0367f);box-shadow:0 3px 0 #a81d57,0 6px 10px rgba(150,20,80,.3)}
+.empty{background:rgba(255,235,243,.88)}
+dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
+.cal .day:hover{background:#ffc2da}
+.musicbox{margin:12px 0 4px}
+.mrow{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 6px}
+.mrow>div{flex:1;min-width:130px}
+.yth{position:fixed;right:0;bottom:0;width:200px;height:200px;opacity:0;pointer-events:none;z-index:-1}
+/* ===== แผ่นเสียง ===== */
+.disc{position:relative;z-index:1;display:flex;align-items:center;gap:18px;margin-top:14px;padding:14px 16px;border-radius:24px;cursor:pointer;
+ background:linear-gradient(150deg,rgba(255,255,255,.6),rgba(255,150,195,.4));border:2px solid rgba(255,255,255,.85);box-shadow:0 12px 22px -10px rgba(150,20,80,.55)}
+#mDisc .disc{margin-top:10px}
+.disc:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.vwrap{position:relative;flex:none;width:112px;height:112px;margin-right:12px}
+.vinyl{position:relative;width:100%;height:100%;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%,#2b1020 0 2px,#3c1a2e 2px 4px);
+ box-shadow:0 10px 18px rgba(80,10,40,.55),0 0 0 3px #1f0a16 inset;animation:spin 4s linear infinite;animation-play-state:paused}
+.vinyl::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 20deg,rgba(255,255,255,.22),transparent 22%,transparent 50%,rgba(255,255,255,.22) 72%,transparent)}
+.vinyl img{position:absolute;inset:30%;width:40%;height:40%;border-radius:50%;object-fit:cover;border:2px solid #ff9cc2}
+.vinyl i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#ffe3ee;box-shadow:0 0 0 2px #c42569}
+.playing .vinyl{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.arm{position:absolute;top:-6px;right:-18px;width:10px;height:78px;border-radius:6px;background:linear-gradient(90deg,#ffd9e8,#fff,#ffa6c8);transform-origin:50% 8px;transform:rotate(-24deg);transition:transform .6s;box-shadow:0 3px 6px rgba(80,10,40,.35)}
+.arm::before{content:'';position:absolute;top:-6px;left:-5px;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ff8dba);box-shadow:0 2px 4px rgba(80,10,40,.4)}
+.arm::after{content:'';position:absolute;bottom:-8px;left:-3px;width:16px;height:12px;border-radius:3px;background:#e0367f}
+.playing .arm{transform:rotate(14deg)}
+.dinfo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dinfo b{overflow-wrap:anywhere;font-size:.95rem;line-height:1.35}
+.dinfo small{color:var(--soft);margin:0}
+.pbtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;background:linear-gradient(180deg,#ff7ab0,#ff4f93);box-shadow:0 3px 0 #c42569,0 6px 10px rgba(150,20,80,.35)}
+.pbtn::before{content:'\25B6'}
+.playing .pbtn::before{content:'\275A\275A'}
+@media(prefers-reduced-motion:reduce){.vinyl{animation:none}.arm{transition:none}}
 </style>
 </head>
 <body>
 <div class="hearts" aria-hidden="true"><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span></div>
 <div class="wrap">
 <header>
- <h1>💕 ไดอารี่ของมะปรางง 💕</h1>
- <p class="sub">วันนี้ผ่านอะไรกันมาบ้างนะ</p>
+ <h1>💕 ไดอารี่ของเรา 💕</h1>
+ <p class="sub">วันนี้เราไปทำอะไรกันมาบ้างนะ</p>
  <div class="bar">
   <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
   <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
@@ -140,10 +190,22 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
     <div class="calfoot"><button type="button" class="ghost" id="calToday">วันนี้</button></div>
    </div>
   </div>
-  <div><label for="author">คนเขียน</label><input id="author" placeholder="เช่น เรา / แฟน" maxlength="30"></div>
+  <div><label>คนเขียน</label><div class="who">✍️ Nice</div></div>
  </div>
  <label for="text">วันนี้ทำอะไรกัน</label>
  <textarea id="text" placeholder="เล่าเรื่องราวของวันนี้..."></textarea>
+ <div class="musicbox">
+  <label for="mUrl">🎵 ลิงก์เพลง YouTube (ไม่บังคับ)</label>
+  <input id="mUrl" placeholder="วางลิงก์ YouTube ที่นี่" autocomplete="off">
+  <div id="mTools" hidden>
+   <div id="mDisc"></div>
+   <div class="mrow">
+    <div><label for="mStart">เริ่มที่ (นาที:วินาที)</label><input id="mStart" placeholder="0:00" inputmode="numeric" autocomplete="off"></div>
+    <div><label for="mEnd">หยุดที่ (เว้นว่าง = เล่นจนจบ)</label><input id="mEnd" placeholder="เช่น 1:30" inputmode="numeric" autocomplete="off"></div>
+   </div>
+   <small class="msg">กดที่แผ่นเสียงเพื่อลองฟังท่อนที่เลือก</small>
+  </div>
+ </div>
  <div class="previews" id="previews"></div>
  <div class="actions">
   <button class="ghost" type="button" id="pick">เพิ่มรูป</button>
@@ -178,12 +240,14 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
  <div class="actions" id="aLinks" style="margin-top:10px"><button class="ghost" type="button" id="aChange">เปลี่ยนรหัส</button><button class="ghost" type="button" id="aReset">เปลี่ยน GitHub Token</button></div>
 </dialog>
 <dialog id="lb"><img id="lbImg" alt=""></dialog>
+<div id="ytHost" class="yth" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ใส่ค่าตรงนี้เพื่อให้ทุกคนที่เปิดเว็บเห็นข้อมูลทันทีโดยไม่ต้องตั้งค่า */
 const CONFIG={owner:'sorawitsenkram-lab',repo:'GFMaprang',branch:'main'};
 const DATA_PATH='data/entries.json', IMG_DIR='images', POLL_MS=15000;
+
 const $=id=>document.getElementById(id);
 const store={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 let cfg=JSON.parse(store.get('cd_cfg')||'{}');
@@ -230,6 +294,7 @@ function render(){
   a.append(t);
   if(e.author){const b=document.createElement('span');b.className='by';b.textContent='เขียนโดย '+e.author;a.append(b)}
   if(e.text){const p=document.createElement('p');p.textContent=e.text;a.append(p)}
+  if(e.music&&/^[\w-]{11}$/.test(e.music.id||''))a.append(buildDisc(()=>e.music,e.id));
   if(e.images&&e.images.length){
    const ph=document.createElement('div');ph.className='photos';
    for(const im of e.images){const f=document.createElement('figure'),i=document.createElement('img');
@@ -286,7 +351,13 @@ $('save').onclick=async()=>{
  if(!token&&!(await openAuth()))return;
  const text=$('text').value.trim(),date=$('date').value;
  if(!date){say('เลือกวันที่ก่อนนะ',1);return}
- if(!text&&!pending.length){say('เขียนข้อความหรือเพิ่มรูปอย่างน้อยหนึ่งอย่าง',1);return}
+ let music=null;
+ if($('mUrl').value.trim()){
+  if(!mCur){say('ลิงก์เพลงไม่ถูกต้อง ใช้ลิงก์ YouTube นะ',1);return}
+  const m=mNow();if(m.end&&m.end<=m.start){say('เวลาหยุดต้องมากกว่าเวลาเริ่ม',1);return}
+  music={id:m.id,title:m.title.startsWith('กำลัง')?'เพลงของเรา':m.title,start:m.start,end:m.end||0};
+ }
+ if(!text&&!pending.length&&!music){say('เขียนข้อความ เพิ่มรูป หรือใส่เพลงอย่างน้อยหนึ่งอย่าง',1);return}
  const btn=$('save');btn.disabled=true;say('กำลังบันทึก...');
  try{
   const id=Date.now().toString(36),images=[];
@@ -296,11 +367,11 @@ $('save').onclick=async()=>{
    if(!r.ok)throw new Error('อัปโหลดรูปไม่สำเร็จ ('+r.status+')');
    images.push(path);
   }
-  const entry={id,date,author:$('author').value.trim(),text,images,created:Date.now()};
-  store.set('cd_author',entry.author);
+  const entry={id,date,author:AUTHOR,text,images,created:Date.now()};
+  if(music)entry.music=music;
   entries=await commit(l=>[...l,entry],'เพิ่มบันทึก '+date);
   lastRaw=JSON.stringify(entries,null,1);
-  $('text').value='';$('previews').textContent='';pending=[];
+  $('text').value='';$('previews').textContent='';pending=[];resetMusic();
   say('บันทึกแล้ว 💕');render();
  }catch(e){say(e.message,1)}
  btn.disabled=false;
@@ -428,6 +499,97 @@ $('calToday').onclick=()=>{setDate(today());closeCal()};
 document.addEventListener('click',e=>{if(!$('cal').hidden&&!e.target.closest('.dwrap'))closeCal()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCal()});
 
+/* ---- เพลง (YouTube) แสดงเป็นแผ่นเสียง ---- */
+const AUTHOR='Nice';
+const ytQ=[];let play={key:null,on:false,p:null},curEl=null,mCur=null,mDiscEl=null;
+const fmt=n=>Math.floor(n/60)+':'+pad(Math.floor(n%60));
+function parseTS(v){v=(v||'').trim();if(!v)return 0;const q=v.split(':').map(Number);return q.some(isNaN)?0:q.reduce((a,b)=>a*60+b,0)}
+function ytId(u){
+ try{const x=new URL(u.trim()),h=x.hostname.replace(/^(www|m|music)\./,'');let id='';
+  if(h==='youtu.be')id=x.pathname.slice(1).split('/')[0];
+  else if(h==='youtube.com'){if(x.pathname==='/watch')id=x.searchParams.get('v')||'';else{const m=x.pathname.match(/^\/(embed|shorts|live)\/([\w-]{11})/);id=m?m[2]:''}}
+  return /^[\w-]{11}$/.test(id)?id:'';
+ }catch(e){return ''}
+}
+function ytStart(u){
+ try{const x=new URL(u),t=x.searchParams.get('t')||x.searchParams.get('start')||'';
+  if(/^\d+$/.test(t))return +t;
+  const m=t.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/);return m?(+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0):0;
+ }catch(e){return 0}
+}
+function loadYT(){
+ if(window.YT&&YT.Player||document.getElementById('ytapi'))return;
+ window.onYouTubeIframeAPIReady=()=>ytQ.splice(0).forEach(f=>f());
+ const sc=document.createElement('script');sc.id='ytapi';sc.src='https://www.youtube.com/iframe_api';document.head.append(sc);
+}
+function whenYT(f){if(window.YT&&YT.Player)f();else{ytQ.push(f);loadYT()}}
+function stopPlay(){
+ if(play.p){try{play.p.destroy()}catch(e){}}
+ play={key:null,on:false,p:null};
+ if(curEl)curEl.classList.remove('playing');curEl=null;
+}
+function playDisc(m,key,el){
+ if(play.key===key&&play.p){try{play.on?play.p.pauseVideo():play.p.playVideo()}catch(e){}return}
+ stopPlay();play.key=key;curEl=el;el.classList.add('playing');
+ whenYT(()=>{
+  if(play.key!==key)return;
+  const host=document.createElement('div');$('ytHost').textContent='';$('ytHost').append(host);
+  const pv={autoplay:1,controls:0,playsinline:1,rel:0,disablekb:1,start:m.start||0};
+  if(m.end&&m.end>(m.start||0))pv.end=m.end;
+  play.p=new YT.Player(host,{videoId:m.id,width:200,height:200,playerVars:pv,events:{
+   onReady:e=>e.target.playVideo(),
+   onStateChange:e=>{
+    if(play.key!==key)return;const st=e.data;
+    if(st===1){play.on=true;if(curEl)curEl.classList.add('playing')}
+    else if(st===2){play.on=false;if(curEl)curEl.classList.remove('playing')}
+    else if(st===0)stopPlay();
+   },
+   onError:()=>{stopPlay();toast('เล่นเพลงนี้ไม่ได้ เจ้าของวิดีโอปิดการเล่นบนเว็บอื่น')}
+  }});
+ });
+}
+function buildDisc(getM,key){
+ const d=document.createElement('div');d.className='disc';d.tabIndex=0;d.setAttribute('role','button');
+ d.innerHTML='<div class="vwrap"><div class="vinyl"><img alt=""><i></i></div><div class="arm"></div></div><div class="dinfo"><span class="pbtn"></span><b></b><small></small></div>';
+ d.refresh=()=>{
+  const m=getM(),st=m.start||0,en=m.end||0;
+  d.querySelector('img').src='https://img.youtube.com/vi/'+m.id+'/hqdefault.jpg';
+  d.querySelector('b').textContent='♪ '+(m.title||'เพลงของเรา');
+  d.querySelector('small').textContent=!st&&!en?'เล่นทั้งเพลง':'ท่อน '+fmt(st)+' – '+(en?fmt(en):'จบเพลง');
+  d.setAttribute('aria-label','เล่นเพลง '+(m.title||''));
+ };
+ d.refresh();
+ d.onclick=()=>playDisc(getM(),key,d);
+ d.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click()}};
+ if(play.key===key&&play.p){curEl=d;d.classList.toggle('playing',play.on)}
+ return d;
+}
+const mNow=()=>({id:mCur.id,title:mCur.title,start:parseTS($('mStart').value),end:parseTS($('mEnd').value)});
+function resetMusic(){
+ if(play.key==='preview')stopPlay();
+ mCur=null;mDiscEl=null;$('mUrl').value='';$('mStart').value='';$('mEnd').value='';$('mDisc').textContent='';$('mTools').hidden=true;
+}
+$('mUrl').addEventListener('input',()=>{
+ const u=$('mUrl').value.trim(),id=ytId(u);
+ if(!id){
+  if(play.key==='preview')stopPlay();
+  mCur=null;mDiscEl=null;$('mTools').hidden=true;$('mDisc').textContent='';
+  if(u)say('ลิงก์นี้ไม่ใช่ลิงก์ YouTube',1);else say('');
+  return;
+ }
+ say('');
+ if(mCur&&mCur.id===id)return;
+ if(play.key==='preview')stopPlay();
+ mCur={id,title:'กำลังโหลดชื่อเพลง...'};
+ const t=ytStart(u);$('mStart').value=t?fmt(t):'';$('mEnd').value='';
+ const disc=buildDisc(mNow,'preview');mDiscEl=disc;
+ $('mDisc').textContent='';$('mDisc').append(disc);$('mTools').hidden=false;
+ const done=ttl=>{if(mCur&&mCur.id===id){mCur.title=ttl;disc.refresh()}};
+ fetch('https://www.youtube.com/oembed?format=json&url='+encodeURIComponent('https://www.youtube.com/watch?v='+id))
+  .then(r=>r.json()).then(j=>done(j.title||'เพลงของเรา')).catch(()=>done('เพลงของเรา'));
+});
+['mStart','mEnd'].forEach(i=>$(i).addEventListener('input',()=>{if(mDiscEl&&mCur)mDiscEl.refresh()}));
+
 $('sort').onclick=()=>{newestFirst=!newestFirst;$('sort').textContent='เรียง: '+(newestFirst?'ใหม่ไปเก่า':'เก่าไปใหม่');render()};
 $('openSet').onclick=()=>{$('cOwner').value=cfg.owner||'';$('cRepo').value=cfg.repo||'';$('cBranch').value=cfg.branch||'main';$('set').showModal()};
 $('closeCfg').onclick=()=>$('set').close();
@@ -439,7 +601,7 @@ $('saveCfg').onclick=()=>{
 };
 $('lb').onclick=()=>$('lb').close();
 
-setDate(today());$('author').value=store.get('cd_author');
+setDate(today());loadYT();
 render();load();
 setInterval(()=>{if(!document.hidden)load()},POLL_MS);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
