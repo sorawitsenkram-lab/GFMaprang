@@ -255,6 +255,20 @@ body.introing .entry.fx.in{animation-play-state:paused!important}
 #inGo.show{opacity:1;transform:none;pointer-events:auto}
 #inSkip{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;padding:7px 18px;font-size:.9rem}
 @media(prefers-reduced-motion:reduce){.ih{display:none}.ibox svg{animation:none}}
+
+/* ---- รูปสุ่มจากไดอารี่ในป๊อปอัป ---- */
+#inPhoto{display:none;position:relative;margin:2px auto 16px;width:clamp(120px,44vw,200px);padding:7px 7px 20px;background:#fff;border-radius:4px;
+ box-shadow:0 12px 24px -8px rgba(224,70,127,.55),0 2px 6px rgba(90,42,60,.15);opacity:0;
+ transform:rotate(var(--rot,-3deg)) scale(.82) translateY(14px);transition:opacity .7s,transform .85s cubic-bezier(.3,1.4,.5,1)}
+#inPhoto.ready{display:block}
+#inPhoto.show{opacity:1;transform:rotate(var(--rot,-3deg))}
+#inPhoto.hide{opacity:0;transform:rotate(var(--rot,-3deg)) scale(.9) translateY(-10px);transition-duration:.55s,.55s}
+#inPhoto::before{content:'';position:absolute;top:-9px;left:50%;width:56px;height:17px;margin-left:-28px;background:rgba(255,156,194,.7);transform:rotate(-3deg)}
+#inPhoto img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:2px;background:#ffe0ec}
+@media(max-height:680px){#inPhoto{width:clamp(96px,30vw,140px);margin-bottom:10px}}
+@media(max-width:380px){#intro{padding:12px}.ibox{padding:20px 16px 18px}}
+@supports(height:100dvh){#intro .ibox{max-height:calc(100dvh - 32px)}}
+@media(prefers-reduced-motion:reduce){#inPhoto,#inPhoto.hide{transition:opacity .3s}}
 </style>
 </head>
 <body class="introing">
@@ -262,6 +276,7 @@ body.introing .entry.fx.in{animation-play-state:paused!important}
  <div class="ih" aria-hidden="true"><span style="left:82%;font-size:26px;animation-duration:24s;animation-delay:-5s">&#9829;</span><span style="left:91%;font-size:38px;animation-duration:21s;animation-delay:-0s">&#9829;</span><span style="left:62%;font-size:25px;animation-duration:23s;animation-delay:-0s">&#9829;</span><span style="left:23%;font-size:21px;animation-duration:18s;animation-delay:-7s">&#9829;</span><span style="left:34%;font-size:30px;animation-duration:21s;animation-delay:-1s">&#9829;</span><span style="left:76%;font-size:25px;animation-duration:13s;animation-delay:-11s">&#9829;</span><span style="left:30%;font-size:31px;animation-duration:17s;animation-delay:-2s">&#9829;</span><span style="left:52%;font-size:23px;animation-duration:14s;animation-delay:-2s">&#9829;</span><span style="left:82%;font-size:37px;animation-duration:20s;animation-delay:-2s">&#9829;</span><span style="left:19%;font-size:18px;animation-duration:13s;animation-delay:-3s">&#9829;</span></div>
  <button class="ghost" id="inSkip" type="button">ข้าม ›</button>
  <div class="ibox">
+  <div id="inPhoto" aria-hidden="true"><img alt=""></div>
   <svg viewBox="-0.7 -0.6 1.4 1.1" aria-hidden="true"><defs><radialGradient id="ig" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffc2da"/><stop offset=".55" stop-color="#ff6fa5"/><stop offset="1" stop-color="#e0467f"/></radialGradient></defs><path d="M0 .4C-.9 -.1 -.5 -.75 0 -.3C.5 -.75 .9 -.1 0 .4Z" fill="url(#ig)"/></svg>
   <p id="intxt">อ้วนอาจเป็นแค่ผู้หญิงคนหนึ่งสำหรับคนอื่น แต่สำหรับเค้า อ้วนคือโลกทั้งใบที่เค้าอยากมีอ้วนอยู่ในทุก ๆ วัน ไม่ต้องสวยที่สุด ไม่ต้องสมบูรณ์แบบ แค่เป็นอ้วนคนเดิมที่เค้าได้รักและดูแลก็พอ เค้าไม่รู้ว่าอนาคตจะเป็นยังไง แต่เค้ารู้ว่าทุกครั้งที่มองไปข้างหน้า เค้ายังอยากมีอ้วนอยู่ข้าง ๆ เสมอ เพราะอ้วนคือผู้หญิงคนเดียวที่เค้าอยากรักไปนาน ๆ และรักหมดทั้งหัวใจ</p>
   <button id="inGo" type="button">เข้าไปอ่านไดอารี่ 💕</button>
@@ -301,6 +316,36 @@ try{
  const fonts=document.fonts&&document.fonts.load?Promise.race([document.fonts.load('600 20px Mali',full),new Promise(r=>setTimeout(r,1500))]):Promise.resolve();
  fonts.catch(()=>{}).then(()=>{if(!closed)timer=setTimeout(tick,800)});
  try{skip.focus({preventScroll:true})}catch(e){}
+ /* ---- สุ่มรูปจากไดอารี่ แสดงทีละรูป หายไปแล้วขึ้นรูปอื่นต่อ ---- */
+ const fr=document.getElementById('inPhoto'),fi=fr&&fr.querySelector('img');
+ if(fr&&fi){
+  let pool=[],last='',pt=0,tries=0;
+  const gather=()=>{try{const a=[];for(const e of entries)for(const im of (e.images||[]))a.push(rawUrl(im));return a}catch(x){return []}};
+  const pick=()=>{const c=pool.length>1?pool.filter(u=>u!==last):pool;return c[Math.floor(Math.random()*c.length)]};
+  const show=()=>{
+   if(closed)return;
+   const u=pick();if(!u)return;
+   const im=new Image();
+   im.onload=()=>{
+    if(closed)return;
+    last=u;fi.src=u;
+    fr.style.setProperty('--rot',R(-7,7).toFixed(1)+'deg');
+    fr.classList.add('ready');void fr.offsetWidth;
+    fr.classList.remove('hide');fr.classList.add('show');
+    pt=setTimeout(()=>{fr.classList.remove('show');fr.classList.add('hide');pt=setTimeout(show,800)},3200);
+   };
+   im.onerror=()=>{pool=pool.filter(x=>x!==u);pt=setTimeout(show,pool.length?100:0)};
+   im.src=u;
+  };
+  const start=()=>{
+   if(closed)return;
+   const p=gather();
+   if(p.length){pool=[...new Set(p)];show();return}
+   if(++tries<40)pt=setTimeout(start,500);
+  };
+  start();
+  document.addEventListener('introclose',()=>clearTimeout(pt),{once:true});
+ }
 }catch(e){
  o.classList.add('gone');document.body.classList.remove('introing');document.dispatchEvent(new Event('introclose'));
 }
