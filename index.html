@@ -223,6 +223,14 @@ input:focus,textarea:focus,select:focus{border-color:var(--pink);box-shadow:0 0 
 #up{position:fixed;right:16px;bottom:18px;z-index:44;width:48px;height:48px;padding:0;font-size:20px;display:grid;place-items:center;opacity:0;transform:translateY(20px) scale(.6);pointer-events:none;transition:opacity .3s,transform .4s cubic-bezier(.2,1.6,.4,1)}
 #up.show{opacity:1;transform:none;pointer-events:auto}
 @media(prefers-reduced-motion:reduce){h1,.sub,.sp,.twinkles i,.entry::after,.timeline::before,#sbar b{animation:none}.sub{color:var(--soft);background:none}.entry.fx{opacity:1}.entry.fx.in.l,.entry.fx.in.r{animation:none}.twinkles{display:none}}
+
+/* ---- ข้อความพิมพ์ทีละตัว ---- */
+.sub{cursor:pointer}
+.sub .rest{visibility:hidden}
+.sub .ty::after{content:'';border-right:2px solid #ff6fa5;margin-right:-2px;animation:blink .8s steps(1) infinite}
+.sub.done .ty::after{display:none}
+@keyframes blink{50%{opacity:0}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1225,6 +1233,36 @@ const sc=()=>{tk=false;const m=document.documentElement.scrollHeight-innerHeight
  bi.style.width=(p*100)+'%';bh.style.left=(p*100)+'%';up.classList.toggle('show',scrollY>700)};
 addEventListener('scroll',()=>{if(!tk){tk=true;requestAnimationFrame(sc)}},{passive:true});sc();
 up.onclick=()=>{const b=up.getBoundingClientRect();burst(b.left+24,b.top+24,12,260);scrollTo({top:0,behavior:'smooth'})};
+})();
+
+/* ================= ข้อความใต้หัวเรื่อง: พิมพ์ทีละตัว ================= */
+(()=>{
+const p=document.querySelector('header .sub');if(!p)return;
+const full=p.textContent.trim();
+const segs=window.Intl&&Intl.Segmenter?[...new Intl.Segmenter('th',{granularity:'grapheme'}).segment(full)].map(x=>x.segment):Array.from(full);
+const mk=(c,t)=>{const e=document.createElement('span');if(c)e.className=c;return e};
+p.textContent='';
+const sr=mk('sr'),box=mk(),ty=mk('ty'),rest=mk('rest');
+sr.textContent=full;box.setAttribute('aria-hidden','true');box.append(ty,rest);p.append(sr,box);
+p.title='แตะเพื่อข้าม / พิมพ์ใหม่อีกครั้ง';
+const paint=n=>{ty.textContent=segs.slice(0,n).join('');rest.textContent=segs.slice(n).join('')};
+const R=(a,b)=>a+Math.random()*(b-a);
+let i=0,timer=0,tok=0;
+const done=()=>{tok++;clearTimeout(timer);i=segs.length;paint(i);p.classList.add('done')};
+if(matchMedia('(prefers-reduced-motion:reduce)').matches){done();return}
+function tick(my){
+ if(my!==tok)return;
+ if(i>=segs.length){p.classList.add('done');return}
+ i++;paint(i);
+ const ch=segs[i-1];let d=R(26,54);
+ if(ch===' ')d+=170;else if(ch==='ๆ')d+=60;
+ if(i===segs.length-1)d+=450;
+ timer=setTimeout(()=>tick(my),d);
+}
+function start(delay){tok++;clearTimeout(timer);i=0;p.classList.remove('done');paint(0);const my=tok;timer=setTimeout(()=>tick(my),delay)}
+p.addEventListener('click',()=>{if(p.classList.contains('done'))start(250);else done()});
+paint(0);
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(()=>start(700));
 })();
 </script>
 </body>
