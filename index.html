@@ -257,11 +257,14 @@ let token=store.get('cd_token')||sget('cd_tok'), entries=[], lastRaw=null, newes
 
 function sget(k){try{return sessionStorage.getItem(k)||''}catch(e){return ''}}
 let seen=null,toastT;
-const localAdds=new Map(),localDels=new Map(),HOLD=120000;
+let localAdds=new Map(),localDels=new Map();const HOLD=300000;
+try{const o=JSON.parse(store.get('cd_local')||'{}');localAdds=new Map(o.adds||[]);localDels=new Map(o.dels||[])}catch(e){}
+function saveLocal(){store.set('cd_local',JSON.stringify({adds:[...localAdds],dels:[...localDels]}))}
 function mergeLocal(remote){
- const now=Date.now(),ids=new Set(remote.map(e=>e.id));let list=remote.slice();
- for(const [id,v] of [...localAdds]){if(ids.has(id)||now-v.t>HOLD)localAdds.delete(id);else list.push(v.e)}
- for(const [id,t] of [...localDels]){if(!ids.has(id)||now-t>HOLD)localDels.delete(id);else list=list.filter(e=>e.id!==id)}
+ const now=Date.now(),ids=new Set(remote.map(e=>e.id));let list=remote.slice(),ch=false;
+ for(const [id,v] of [...localAdds]){if(ids.has(id)||now-v.t>HOLD){localAdds.delete(id);ch=true}else list.push(v.e)}
+ for(const [id,t] of [...localDels]){if(!ids.has(id)||now-t>HOLD){localDels.delete(id);ch=true}else list=list.filter(e=>e.id!==id)}
+ if(ch)saveLocal();
  return list;
 }
 const ready=()=>cfg.owner&&cfg.repo;
@@ -278,17 +281,17 @@ let fails=0;
 async function readData(){
  let why='';
  try{
-  const r=await fetch(api(DATA_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
-  if(r.status===404)return null;
-  if(r.ok)return await r.text();
-  why='GitHub '+r.status;
- }catch(e){why='ต่อ api.github.com ไม่ได้'}
- try{
   const r=await fetch(rawUrl(DATA_PATH)+'?t='+Date.now(),{cache:'no-store'});
   if(r.status===404)return null;
   if(r.ok)return await r.text();
-  why+=' / raw '+r.status;
- }catch(e){why+=' / ต่อ raw.githubusercontent.com ไม่ได้'}
+  why='raw '+r.status;
+ }catch(e){why='ต่อ raw.githubusercontent.com ไม่ได้'}
+ try{
+  const r=await fetch(api(DATA_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
+  if(r.status===404)return null;
+  if(r.ok)return await r.text();
+  why+=' / GitHub '+r.status;
+ }catch(e){why+=' / ต่อ api.github.com ไม่ได้'}
  throw new Error(why);
 }
 async function load(){
@@ -396,7 +399,7 @@ $('save').onclick=async()=>{
   if(music)entry.music=music;
   entries=await commit(l=>[...l,entry],'เพิ่มบันทึก '+date);
   lastRaw=JSON.stringify(entries);
-  localAdds.set(id,{e:entry,t:Date.now()});if(play.key==='preview')play.key=id;
+  localAdds.set(id,{e:entry,t:Date.now()});saveLocal();if(play.key==='preview')play.key=id;
   $('text').value='';$('previews').textContent='';pending=[];resetMusic();
   say('บันทึกแล้ว 💕');render();
  }catch(e){say(e.message,1)}
@@ -407,7 +410,7 @@ async function removeEntry(id){
  if(!ready()){$('set').showModal();return}
  if(!token&&!(await openAuth()))return;
  if(!confirm('ลบบันทึกนี้ใช่ไหม'))return;
- try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');localDels.set(id,Date.now());lastRaw=JSON.stringify(entries);render()}
+ try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');localDels.set(id,Date.now());saveLocal();lastRaw=JSON.stringify(entries);render()}
  catch(e){say(e.message,1)}
 }
 
