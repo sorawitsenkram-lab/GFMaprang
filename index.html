@@ -215,7 +215,7 @@ dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
  </div>
 </section>
 
-<div class="sorter"><button class="ghost" type="button" id="sort">เรียง: ใหม่ไปเก่า</button></div>
+<div class="sorter"><button class="ghost" type="button" id="sort">เรียง: เก่าไปใหม่</button></div>
 <main id="list" class="timeline"></main>
 </div>
 
@@ -253,10 +253,17 @@ const store={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}}
 let cfg=JSON.parse(store.get('cd_cfg')||'{}');
 for(const k in CONFIG) if(CONFIG[k]) cfg[k]=CONFIG[k];
 cfg.branch=cfg.branch||'main';
-let token=store.get('cd_token')||sget('cd_tok'), entries=[], lastRaw=null, newestFirst=true, pending=[];
+let token=store.get('cd_token')||sget('cd_tok'), entries=[], lastRaw=null, newestFirst=false, pending=[];
 
 function sget(k){try{return sessionStorage.getItem(k)||''}catch(e){return ''}}
 let seen=null,toastT;
+const localAdds=new Map(),localDels=new Map(),HOLD=120000;
+function mergeLocal(remote){
+ const now=Date.now(),ids=new Set(remote.map(e=>e.id));let list=remote.slice();
+ for(const [id,v] of [...localAdds]){if(ids.has(id)||now-v.t>HOLD)localAdds.delete(id);else list.push(v.e)}
+ for(const [id,t] of [...localDels]){if(!ids.has(id)||now-t>HOLD)localDels.delete(id);else list=list.filter(e=>e.id!==id)}
+ return list;
+}
 const ready=()=>cfg.owner&&cfg.repo;
 const api=p=>`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${p}`;
 const rawUrl=p=>`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${p}`;
@@ -273,8 +280,8 @@ async function load(){
   const r=await fetch(api(DATA_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
   if(r.status===404){entries=[];lastRaw='[]';setLive(true,'ออนไลน์ (ยังไม่มีบันทึก)');render();return}
   if(!r.ok)throw new Error(r.status);
-  const raw=await r.text();
-  if(raw!==lastRaw){const had=lastRaw!==null,old=new Set(entries.map(e=>e.id));lastRaw=raw;entries=JSON.parse(raw);const add=entries.filter(e=>!old.has(e.id));render();if(had&&add.length)toast('มีบันทึกใหม่ '+add.length+' รายการ 💕')}
+  const list=mergeLocal(JSON.parse(await r.text())),sig=JSON.stringify(list);
+  if(sig!==lastRaw){const had=lastRaw!==null,old=new Set(entries.map(e=>e.id));lastRaw=sig;entries=list;const add=entries.filter(e=>!old.has(e.id));render();if(had&&add.length)toast('มีบันทึกใหม่ '+add.length+' รายการ 💕')}
   setLive(true,'เรียลไทม์ · เช็กล่าสุด '+new Date().toLocaleTimeString('th-TH'));
  }catch(e){setLive(false,'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง')}
 }
@@ -370,7 +377,8 @@ $('save').onclick=async()=>{
   const entry={id,date,author:AUTHOR,text,images,created:Date.now()};
   if(music)entry.music=music;
   entries=await commit(l=>[...l,entry],'เพิ่มบันทึก '+date);
-  lastRaw=JSON.stringify(entries,null,1);
+  lastRaw=JSON.stringify(entries);
+  localAdds.set(id,{e:entry,t:Date.now()});if(play.key==='preview')play.key=id;
   $('text').value='';$('previews').textContent='';pending=[];resetMusic();
   say('บันทึกแล้ว 💕');render();
  }catch(e){say(e.message,1)}
@@ -381,7 +389,7 @@ async function removeEntry(id){
  if(!ready()){$('set').showModal();return}
  if(!token&&!(await openAuth()))return;
  if(!confirm('ลบบันทึกนี้ใช่ไหม'))return;
- try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');lastRaw=JSON.stringify(entries,null,1);render()}
+ try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');localDels.set(id,Date.now());lastRaw=JSON.stringify(entries);render()}
  catch(e){say(e.message,1)}
 }
 
@@ -530,16 +538,16 @@ function stopPlay(){
 }
 function playDisc(m,key,el){
  if(play.key===key&&play.p){try{play.on?play.p.pauseVideo():play.p.playVideo()}catch(e){}return}
- stopPlay();play.key=key;curEl=el;el.classList.add('playing');
+ stopPlay();const tok={};play.key=key;play.tok=tok;curEl=el;el.classList.add('playing');
  whenYT(()=>{
-  if(play.key!==key)return;
+  if(play.tok!==tok)return;
   const host=document.createElement('div');$('ytHost').textContent='';$('ytHost').append(host);
   const pv={autoplay:1,controls:0,playsinline:1,rel:0,disablekb:1,start:m.start||0};
   if(m.end&&m.end>(m.start||0))pv.end=m.end;
   play.p=new YT.Player(host,{videoId:m.id,width:200,height:200,playerVars:pv,events:{
    onReady:e=>e.target.playVideo(),
    onStateChange:e=>{
-    if(play.key!==key)return;const st=e.data;
+    if(play.p!==e.target)return;const st=e.data;
     if(st===1){play.on=true;if(curEl)curEl.classList.add('playing')}
     else if(st===2){play.on=false;if(curEl)curEl.classList.remove('playing')}
     else if(st===0)stopPlay();
