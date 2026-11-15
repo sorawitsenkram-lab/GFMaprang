@@ -175,6 +175,16 @@ dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
  .disc{gap:12px;padding:12px}
  .vwrap{width:92px;height:92px;margin-right:10px}
 }
+
+/* ---- สร้างคลิป ---- */
+select{font:inherit;color:var(--ink);width:100%;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;background:#fff;box-shadow:inset 0 2px 5px rgba(224,70,127,.1)}
+#vid{max-width:540px}
+#vid canvas,#vid video{display:block;max-width:100%;max-height:56vh;width:auto;height:auto;margin:12px auto;border-radius:18px;background:#ffe0ec;box-shadow:0 14px 30px -12px rgba(224,70,127,.55)}
+.vbar{height:10px;border-radius:99px;background:rgba(255,255,255,.8);box-shadow:inset 0 1px 3px rgba(224,70,127,.25);overflow:hidden;margin:4px 0 8px}
+.vbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ff9cc2,#e0467f)}
+.dl{display:inline-block;text-decoration:none;font-weight:600;border-radius:999px;padding:9px 22px;background:linear-gradient(180deg,#ff8dba,var(--pink));color:#fff;box-shadow:0 4px 0 var(--deep),0 9px 14px rgba(224,70,127,.35)}
+.dl:active{transform:translateY(3px);box-shadow:0 1px 0 var(--deep)}
+#vid input[type=file]{padding:8px 10px}
 </style>
 </head>
 <body>
@@ -186,6 +196,7 @@ dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
  <div class="bar">
   <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
   <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
+  <button class="ghost" id="openVid" type="button">🎬 สร้างคลิป</button>
  </div>
 </header>
 
@@ -255,6 +266,37 @@ dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
  <h2>ลบบันทึกนี้?</h2>
  <small>ลบแล้วจะหายจากไดอารี่ของทุกคน</small>
  <div class="actions"><button type="button" id="cfmYes">ลบเลย</button><button class="ghost" type="button" id="cfmNo">ยกเลิก</button></div>
+</dialog>
+<dialog id="vid">
+ <h2>🎬 สร้างคลิปจากไดอารี่</h2>
+ <div id="vOpts">
+  <small id="vHint"></small>
+  <div class="row">
+   <div><label for="vRatio">ขนาดคลิป</label><select id="vRatio"><option value="port">แนวตั้ง 9:16 (Reels / TikTok / Story)</option><option value="land">แนวนอน 16:9 (YouTube / จอคอม)</option></select></div>
+   <div><label for="vQual">คุณภาพ</label><select id="vQual"><option value="hd">คมชัดสูง</option><option value="sd">ปกติ (ไฟล์เล็ก ทำเร็วบนมือถือ)</option></select></div>
+  </div>
+  <div class="row">
+   <div><label for="vOrder">เรียงลำดับ</label><select id="vOrder"><option value="asc">เก่าไปใหม่</option><option value="desc">ใหม่ไปเก่า</option></select></div>
+   <div><label for="vCount">บันทึกที่ใช้</label><select id="vCount"><option value="all">ทั้งหมด</option><option value="30">30 ล่าสุด</option><option value="15">15 ล่าสุด</option><option value="8">8 ล่าสุด</option></select></div>
+  </div>
+  <label for="vAudio">🎵 เพลงประกอบ (ไม่บังคับ)</label>
+  <input type="file" id="vAudio" accept="audio/*">
+  <small>เลือกไฟล์เพลง (mp3 / m4a) จากเครื่องได้ ส่วนเพลง YouTube ในไดอารี่ดึงเข้าคลิปไม่ได้ แต่ชื่อเพลงจะขึ้นเป็นป้าย ♪ ในฉากนั้น</small>
+  <small>คลิปบันทึกแบบเรียลไทม์ คลิปยาว 1 นาทีใช้เวลาทำ 1 นาที ระหว่างนั้นให้เปิดหน้านี้ค้างไว้</small>
+  <div class="msg" id="vMsg" role="alert"></div>
+  <div class="actions" style="margin-top:8px"><button type="button" id="vGo">เริ่มสร้างคลิป</button><button class="ghost" type="button" id="vClose">ปิด</button></div>
+ </div>
+ <div id="vStage" hidden>
+  <canvas id="vCv"></canvas>
+  <div class="vbar"><i id="vFill"></i></div>
+  <div class="msg" id="vInfo"></div>
+  <div class="actions" style="margin-top:8px"><button class="ghost" type="button" id="vStop">ยกเลิก</button></div>
+ </div>
+ <div id="vDone" hidden>
+  <video id="vPlay" controls playsinline></video>
+  <div class="msg" id="vDoneMsg"></div>
+  <div class="actions" style="margin-top:8px"><a class="dl" id="vDl" download>⬇ ดาวน์โหลดคลิป</a><button type="button" id="vShare" hidden>แชร์</button><button class="ghost" type="button" id="vAgain">ทำใหม่</button><button class="ghost" type="button" onclick="$('vid').close()">ปิด</button></div>
+ </div>
 </dialog>
 <div id="ytHost" class="yth" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -664,6 +706,387 @@ render();load();
 loop();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
 window.addEventListener('focus',load);window.addEventListener('online',load);
+
+/* ================= สร้างคลิปวิดีโอจากไดอารี่ ================= */
+(()=>{
+const FONT="'Mali','Noto Sans Thai',sans-serif";
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eo=t=>1-Math.pow(1-t,3);
+const eb=t=>{const c=1.70158;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
+const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const SEG=window.Intl&&Intl.Segmenter?new Intl.Segmenter('th',{granularity:'word'}):null;
+const dFull=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'})};
+const dShort=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})};
+const mmss=n=>Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0');
+
+/* ---------- รูปทรงพื้นฐาน ---------- */
+function heart(c,x,y,s){c.beginPath();c.moveTo(x,y+s*.4);c.bezierCurveTo(x-s*.9,y-s*.1,x-s*.5,y-s*.75,x,y-s*.3);c.bezierCurveTo(x+s*.5,y-s*.75,x+s*.9,y-s*.1,x,y+s*.4);c.closePath()}
+function star(c,x,y,s){c.beginPath();c.moveTo(x,y-s);c.quadraticCurveTo(x,y,x+s,y);c.quadraticCurveTo(x,y,x,y+s);c.quadraticCurveTo(x,y,x-s,y);c.quadraticCurveTo(x,y,x,y-s);c.closePath()}
+function rr(c,x,y,w,h,r){c.beginPath();if(c.roundRect){c.roundRect(x,y,w,h,r)}else{r=Math.min(r,w/2,h/2);c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}}
+
+/* ---------- ตัดบรรทัดภาษาไทย ---------- */
+function words(s){return SEG?[...SEG.segment(s)].map(x=>x.segment):s.split(/(\s+)/).filter(Boolean)}
+function wrap(c,text,maxW){
+ const out=[];
+ for(const para of text.split(/\r?\n/)){
+  if(!para.trim()){if(out.length&&out[out.length-1]!=='')out.push('');continue}
+  let line='';
+  const push=w=>{
+   if(c.measureText(line+w).width<=maxW){line+=w;return}
+   if(line.trim()){out.push(line.trimEnd());line='';w=w.trimStart()}
+   if(c.measureText(w).width<=maxW){line=w;return}
+   for(const ch of Array.from(w)){if(line&&c.measureText(line+ch).width>maxW){out.push(line);line=''}line+=ch}
+  };
+  for(const w of words(para))push(w);
+  if(line.trim())out.push(line.trimEnd());
+ }
+ while(out.length&&out[out.length-1]==='')out.pop();
+ return out;
+}
+function fitText(c,text,maxW,maxH,sizes){
+ let r;
+ for(const sz of sizes){
+  c.font=`600 ${sz}px ${FONT}`;
+  const lines=wrap(c,text,maxW),lh=sz*1.55;
+  r={sz,lines,lh,fit:lines.length*lh<=maxH};
+  if(r.fit)return r;
+ }
+ return r;
+}
+
+/* ---------- เลย์เอาต์ ---------- */
+function geo(LW,LH){
+ if(LH>LW){
+  const bot=LH-95;
+  return {P:true,LW,LH,pillY:118,authY:176,footY:LH-48,pad:34,
+   combo:{photo:{x:40,y:215,w:640,h:520},card:{x:50,y:765,w:620,h:bot-765}},
+   photos:{x:40,y:215,w:640,h:bot-225},text:{x:50,y:240,w:620,h:bot-250},
+   sizesC:[40,38,36,34,32,30,28],sizesT:[48,44,42,40,38,36,34,32,30]};
+ }
+ const bot=LH-80;
+ return {P:false,LW,LH,pillY:56,authY:108,footY:LH-38,pad:30,
+  combo:{photo:{x:40,y:135,w:700,h:bot-135},card:{x:770,y:135,w:470,h:bot-135}},
+  photos:{x:100,y:135,w:1080,h:bot-135},text:{x:190,y:135,w:900,h:bot-135},
+  sizesC:[34,32,30,28,26,24],sizesT:[42,40,38,36,34,32,30,28]};
+}
+function frames(rect,imgs){
+ const n=imgs.length,{x,y,w,h}=rect,wide=w>h*1.15,g=16;let cells;
+ if(n===1)cells=[rect];
+ else if(n===2)cells=wide?[{x,y,w:(w-g)/2,h},{x:x+(w+g)/2,y,w:(w-g)/2,h}]:[{x,y,w,h:(h-g)/2},{x,y:y+(h+g)/2,w,h:(h-g)/2}];
+ else cells=wide?[{x,y,w:w*.52,h},{x:x+w*.52+g,y,w:w*.48-g,h:(h-g)/2},{x:x+w*.52+g,y:y+(h+g)/2,w:w*.48-g,h:(h-g)/2}]:[{x,y,w,h:(h-g)/2},{x,y:y+(h+g)/2,w:(w-g)/2,h:(h-g)/2},{x:x+(w+g)/2,y:y+(h+g)/2,w:(w-g)/2,h:(h-g)/2}];
+ const rots=[-2.2,1.8,-1.4];
+ return imgs.map((img,i)=>{
+  const a=clamp(img.naturalWidth/img.naturalHeight,.72,1.45),b=12,bb=44,pad=16,cell=cells[i];
+  const iw=Math.max(40,Math.min(cell.w-2*pad-2*b,(cell.h-2*pad-b-bb)*a)),ih=iw/a;
+  return {img,iw,ih,b,bb,ow:iw+2*b,oh:ih+b+bb,cx:cell.x+cell.w/2,cy:cell.y+cell.h/2,rot:rots[i%3]*Math.PI/180,dir:i%2?1:-1};
+ });
+}
+
+/* ---------- สร้างฉาก ---------- */
+function buildScenes(list,imgMap,G,c){
+ const S=[];
+ const sorted=list;
+ S.push({kind:'intro',dur:5,first:sorted[0].date,last:sorted[sorted.length-1].date,n:sorted.length});
+ const readDur=(chars,min)=>clamp(2.8+chars*.055,min,12);
+ for(const e of sorted){
+  const imgs=(e.images||[]).map(p=>imgMap.get(p)).filter(Boolean);
+  const text=(e.text||'').trim();
+  const music=e.music&&e.music.title?e.music.title:'';
+  const base={kind:'entry',date:e.date,author:e.author,music};
+  const chunks=[];for(let i=0;i<imgs.length;i+=3)chunks.push(imgs.slice(i,i+3));
+  const photoScene=ch=>({...base,layout:'photos',dur:3.4+ch.length*.7,frames:frames(G.photos,ch),tx:null});
+  const textScenes=()=>{
+   const iw=G.text.w-2*G.pad,ih=G.text.h-2*G.pad;
+   let f=fitText(c,text,iw,ih,G.sizesT);
+   if(f.fit)return [{...base,layout:'text',dur:readDur(text.length,4.5),tx:f}];
+   const per=Math.max(1,Math.floor(ih/f.lh)),out=[];
+   for(let i=0;i<f.lines.length;i+=per){
+    const pg=f.lines.slice(i,i+per);while(pg.length&&pg[0]==='')pg.shift();
+    out.push({...base,layout:'text',dur:readDur(pg.join('').length,4.5),tx:{...f,lines:pg},page:out.length+1});
+   }
+   return out;
+  };
+  if(!chunks.length&&text){S.push(...textScenes());continue}
+  if(!chunks.length&&!text){continue}
+  if(text){
+   const f=fitText(c,text,G.combo.card.w-2*G.pad,G.combo.card.h-2*G.pad,G.sizesC);
+   if(f.fit){
+    S.push({...base,layout:'combo',dur:readDur(text.length,5.5),frames:frames(G.combo.photo,chunks[0]),tx:f});
+    for(const ch of chunks.slice(1))S.push(photoScene(ch));
+   }else{
+    for(const ch of chunks)S.push(photoScene(ch));
+    S.push(...textScenes());
+   }
+  }else for(const ch of chunks)S.push(photoScene(ch));
+ }
+ S.push({kind:'outro',dur:5.5});
+ let t=0;for(const s of S){s.start=t;t+=s.dur}
+ return {scenes:S,total:t};
+}
+
+/* ---------- วาดองค์ประกอบ ---------- */
+function drawPill(c,G,txt,x,y,al,dy){
+ let fs=G.P?34:30;c.font=`700 ${fs}px ${FONT}`;
+ while(c.measureText(txt).width>G.LW-120&&fs>18){fs-=2;c.font=`700 ${fs}px ${FONT}`}
+ const w=c.measureText(txt).width+64,h=fs*1.9;
+ c.save();c.globalAlpha*=al;c.translate(0,dy);
+ rr(c,x-w/2,y-h/2+4,w,h,h/2);c.fillStyle='#a81d57';c.fill();
+ c.shadowColor='rgba(150,20,80,.35)';c.shadowBlur=18;c.shadowOffsetY=8;
+ const g=c.createLinearGradient(0,y-h/2,0,y+h/2);g.addColorStop(0,'#ff5fa0');g.addColorStop(1,'#e0367f');
+ rr(c,x-w/2,y-h/2,w,h,h/2);c.fillStyle=g;c.fill();
+ c.shadowColor='transparent';c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,x,y+1);
+ c.restore();
+}
+function drawFrame(c,f,t,dur,i){
+ const d=.25+.22*i,p=eb(clamp((t-d)/.75)),al=clamp((t-d+.05)/.35);
+ if(al<=0)return;
+ c.save();c.globalAlpha*=al;
+ c.translate(f.cx,f.cy+(1-p)*70);c.rotate(f.rot*(0.4+0.6*p));const sc=.6+.4*p;c.scale(sc,sc);
+ c.shadowColor='rgba(120,30,70,.38)';c.shadowBlur=30;c.shadowOffsetY=14;
+ rr(c,-f.ow/2,-f.oh/2,f.ow,f.oh,6);c.fillStyle='#fff';c.fill();
+ c.shadowColor='transparent';
+ const ix=-f.ow/2+f.b,iy=-f.oh/2+f.b;
+ c.save();rr(c,ix,iy,f.iw,f.ih,2);c.clip();
+ const im=f.img,ia=im.naturalWidth/im.naturalHeight,fa=f.iw/f.ih;
+ let sw,sh;if(ia>fa){sh=im.naturalHeight;sw=sh*fa}else{sw=im.naturalWidth;sh=sw/fa}
+ const pr=clamp(t/dur),z=1+.14*pr,zw=sw/z,zh=sh/z;
+ const sx=(im.naturalWidth-zw)/2+f.dir*(sw-zw)/2*(pr*2-1)*.8,sy=(im.naturalHeight-zh)/2;
+ c.drawImage(im,sx,sy,zw,zh,ix,iy,f.iw,f.ih);
+ c.restore();
+ c.fillStyle='#ff6fa5';heart(c,0,f.oh/2-f.bb/2+4,13);c.fill();
+ c.save();c.translate(0,-f.oh/2);c.rotate(-.05);rr(c,-30,-10,60,20,2);c.fillStyle='rgba(255,156,194,.72)';c.fill();c.restore();
+ c.restore();
+}
+function drawCard(c,G,r,tx,t,dur,textOnly){
+ const al=clamp((t-.4)/.5),sl=(1-eo(clamp((t-.4)/.6)))*50;
+ if(al<=0)return;
+ let {x,y,w,h}=r;
+ if(textOnly){const need=tx.lines.length*tx.lh+2*G.pad;h=clamp(need,240,r.h);y=r.y+(r.h-h)/2}
+ c.save();c.globalAlpha*=al;c.translate(0,sl);
+ c.shadowColor='rgba(224,70,127,.4)';c.shadowBlur=36;c.shadowOffsetY=16;
+ const g=c.createLinearGradient(x,y,x+w*.4,y+h);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#fff0f6');
+ rr(c,x,y,w,h,34);c.fillStyle=g;c.fill();
+ c.shadowColor='transparent';c.lineWidth=3;c.strokeStyle='#ffc9dd';c.stroke();
+ c.save();rr(c,x,y,w,h,34);c.clip();c.fillStyle='rgba(255,111,165,.1)';heart(c,x+w-70,y+h-60,110);c.fill();c.restore();
+ c.fillStyle='#5a2a3c';c.textAlign='center';c.textBaseline='middle';c.font=`600 ${tx.sz}px ${FONT}`;
+ const top=y+(h-tx.lines.length*tx.lh)/2+tx.lh/2;
+ const step=clamp((dur-2.6)*.7/Math.max(1,tx.lines.length),.06,.4);
+ tx.lines.forEach((ln,i)=>{
+  const la=clamp((t-.9-i*step)/.45);if(la<=0||!ln)return;
+  c.save();c.globalAlpha*=la;c.fillText(ln,x+w/2,top+i*tx.lh+(1-eo(la))*14);c.restore();
+ });
+ c.restore();
+}
+function drawFoot(c,G,sc,al){
+ c.save();c.globalAlpha*=al;c.textAlign='center';c.textBaseline='middle';
+ if(sc.music){
+  c.font=`600 ${G.P?24:20}px ${FONT}`;let s='♪ '+sc.music;const mx=G.LW*.7;
+  if(c.measureText(s).width>mx){while(c.measureText(s+'…').width>mx&&s.length>4)s=s.slice(0,-1);s+='…'}
+  const w=c.measureText(s).width+44,h=G.P?44:38;
+  rr(c,G.LW/2-w/2,G.footY-h/2,w,h,h/2);c.fillStyle='rgba(255,255,255,.85)';c.fill();c.lineWidth=2;c.strokeStyle='#ffc9dd';c.stroke();
+  c.fillStyle='#e0467f';c.fillText(s,G.LW/2,G.footY+1);
+ }else{
+  c.font=`600 ${G.P?24:20}px ${FONT}`;const s='ไดอารี่ของเรา',w=c.measureText(s).width;
+  c.fillStyle='#a2677f';c.fillText(s,G.LW/2+14,G.footY);c.fillStyle='#ff6fa5';heart(c,G.LW/2-w/2-8,G.footY,10);c.fill();
+ }
+ c.restore();
+}
+function drawEntry(c,G,sc,t){
+ const al=Math.min(clamp(t/.5),clamp((sc.dur-t)/.5));
+ c.save();c.globalAlpha=al;
+ drawPill(c,G,dFull(sc.date),G.LW/2,G.pillY,clamp(t/.5),(1-eo(clamp(t/.6)))*-40);
+ if(sc.author){
+  c.save();c.globalAlpha*=clamp((t-.3)/.5);c.font=`600 ${G.P?24:22}px ${FONT}`;c.fillStyle='#a2677f';c.textAlign='center';c.textBaseline='middle';
+  c.fillText('เขียนโดย '+sc.author+(sc.page?'  ·  หน้า '+sc.page:''),G.LW/2,G.authY);c.restore();
+ }
+ if(sc.frames)sc.frames.forEach((f,i)=>drawFrame(c,f,t,sc.dur,i));
+ if(sc.tx)drawCard(c,G,sc.layout==='combo'?G.combo.card:G.text,sc.tx,t,sc.dur,sc.layout==='text');
+ drawFoot(c,G,sc,clamp((t-.4)/.5));
+ c.restore();
+}
+function drawIntro(c,G,sc,t){
+ const {LW,LH,P}=G,al=Math.min(clamp(t/.4),clamp((sc.dur-t)/.6)),cx=LW/2;
+ c.save();c.globalAlpha=al;
+ const beat=1+.05*Math.sin(t*6)+.03*Math.sin(t*12),hs=(P?330:210)*eb(clamp(t/.9))*beat,hy=P?LH*.30:205;
+ c.save();c.shadowColor='rgba(224,70,127,.5)';c.shadowBlur=70;
+ const g=c.createRadialGradient(cx-hs*.2,hy-hs*.25,hs*.05,cx,hy,hs*.7);g.addColorStop(0,'#ffc2da');g.addColorStop(.55,'#ff6fa5');g.addColorStop(1,'#e0467f');
+ heart(c,cx,hy,hs);c.fillStyle=g;c.fill();c.restore();
+ const ty=P?LH*.53:420,p1=eb(clamp((t-.35)/.8)),a1=clamp((t-.3)/.4);
+ let fs=P?88:92;c.font=`700 ${fs}px ${FONT}`;while(c.measureText('ไดอารี่ของเรา').width>LW-90&&fs>40){fs-=2;c.font=`700 ${fs}px ${FONT}`}
+ c.save();c.globalAlpha*=a1;c.translate(cx,ty);c.scale(p1,p1);c.textAlign='center';c.textBaseline='middle';
+ const cols=['#ffb3d1','#ffa5c8','#ff9cc2','#ff8dba','#ff7fb1','#f870a5','#ee5f98','#e0467f'];
+ for(let i=cols.length;i>=1;i--){c.fillStyle=cols[i-1];c.fillText('ไดอารี่ของเรา',0,i*3.6)}
+ c.shadowColor='rgba(224,70,127,.45)';c.shadowBlur=30;c.fillStyle='#fff';c.fillText('ไดอารี่ของเรา',0,0);c.restore();
+ const a2=clamp((t-.9)/.5);c.save();c.globalAlpha*=a2;c.translate(0,(1-eo(a2))*20);
+ c.font=`600 ${P?34:30}px ${FONT}`;c.fillStyle='#a2677f';c.textAlign='center';c.textBaseline='middle';c.fillText('วันนี้เราไปทำอะไรกันมาบ้างนะ',cx,ty+(P?100:104));c.restore();
+ const a3=clamp((t-1.4)/.5);
+ const rng=sc.first===sc.last?dShort(sc.first):dShort(sc.first)+'  –  '+dShort(sc.last);
+ c.save();c.globalAlpha*=a3;c.translate(0,(1-eo(a3))*20);c.font=`600 ${P?28:26}px ${FONT}`;
+ const rw=c.measureText(rng).width+56,rh=P?58:52,ry=ty+(P?195:182);
+ rr(c,cx-rw/2,ry-rh/2,rw,rh,rh/2);c.fillStyle='rgba(255,255,255,.85)';c.fill();c.lineWidth=2;c.strokeStyle='#ffc9dd';c.stroke();
+ c.fillStyle='#e0467f';c.textAlign='center';c.textBaseline='middle';c.fillText(rng,cx,ry+1);
+ c.font=`600 ${P?24:22}px ${FONT}`;c.fillStyle='#a2677f';c.fillText(sc.n+' บันทึก',cx,ry+rh/2+(P?34:30));c.restore();
+ c.restore();
+}
+function drawOutro(c,G,sc,t){
+ const {LW,LH,P}=G,al=Math.min(clamp(t/.5),clamp((sc.dur-t)/.9)),cx=LW/2,cy=P?LH*.36:LH*.30;
+ c.save();c.globalAlpha=al;
+ const r=mul(99);
+ for(let i=0;i<30;i++){
+  const ang=r()*Math.PI*2,sp=120+r()*340,t0=r()*1.6,sz=14+r()*26,life=2.6,q=(t-t0)/life;
+  if(q<0||q>1)continue;
+  const d=sp*eo(q)*1.3;c.save();c.globalAlpha*=(1-q)*.8;c.fillStyle=i%3?'#ff6fa5':'#ffb3d1';
+  heart(c,cx+Math.cos(ang)*d,cy+Math.sin(ang)*d*.9-q*40,sz);c.fill();c.restore();
+ }
+ const beat=1+.06*Math.sin(t*6),hs=(P?260:190)*eb(clamp(t/.9))*beat;
+ c.save();c.shadowColor='rgba(224,70,127,.5)';c.shadowBlur=60;
+ const g=c.createRadialGradient(cx-hs*.2,cy-hs*.25,hs*.05,cx,cy,hs*.7);g.addColorStop(0,'#ffc2da');g.addColorStop(.55,'#ff6fa5');g.addColorStop(1,'#e0467f');
+ heart(c,cx,cy,hs);c.fillStyle=g;c.fill();c.restore();
+ const lines=['ขอบคุณทุกวันดีๆ','ที่เราอยู่ด้วยกันนะ'],fs=P?62:54,ty=LH*.62;
+ lines.forEach((ln,i)=>{
+  const a=clamp((t-.8-i*.45)/.6);if(a<=0)return;
+  c.save();c.globalAlpha*=a;c.translate(cx,ty+i*fs*1.5+(1-eo(a))*24);c.textAlign='center';c.textBaseline='middle';c.font=`700 ${fs}px ${FONT}`;
+  for(let k=5;k>=1;k--){c.fillStyle=k>3?'#ff8dba':'#ee5f98';c.fillText(ln,0,k*3)}
+  c.shadowColor='rgba(224,70,127,.4)';c.shadowBlur=24;c.fillStyle='#fff';c.fillText(ln,0,0);c.restore();
+ });
+ const a4=clamp((t-2.4)/.6);c.save();c.globalAlpha*=a4;c.font=`600 ${P?28:24}px ${FONT}`;c.fillStyle='#a2677f';c.textAlign='center';c.textBaseline='middle';
+ c.fillText('ไดอารี่ของเรา  ·  ติดตามตอนต่อไป',cx,ty+fs*3.2+(P?24:0));c.restore();
+ c.restore();
+}
+
+/* ---------- ตัวเรนเดอร์หลัก ---------- */
+function makeRenderer(cv,LW,LH,S,sceneData,G){
+ const c=cv.getContext('2d'),bg=document.createElement('canvas');
+ bg.width=cv.width;bg.height=cv.height;
+ const b=bg.getContext('2d');b.scale(S,S);
+ const lg=b.createLinearGradient(0,0,LW*.4,LH);lg.addColorStop(0,'#fff6fa');lg.addColorStop(1,'#ffe0ec');b.fillStyle=lg;b.fillRect(0,0,LW,LH);
+ const R=Math.max(LW,LH);
+ for(const [x,y,r,col] of [[LW*.1,0,R*.6,'255,255,255'],[LW,LH*.25,R*.5,'255,194,218'],[0,LH*.9,R*.55,'255,211,229']]){
+  const g=b.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${col},.95)`);g.addColorStop(1,`rgba(${col},0)`);b.fillStyle=g;b.fillRect(0,0,LW,LH);
+ }
+ const rd=mul(7),hearts=Array.from({length:18},()=>({x:rd()*LW,s:12+rd()*24,v:28+rd()*38,o:rd()*3000,ph:rd()*6.28,a:.16+rd()*.16}));
+ const sparks=Array.from({length:16},()=>({x:rd()*LW,y:rd()*LH,s:5+rd()*9,ph:rd()*6.28,f:1.2+rd()*1.8}));
+ const {scenes,total}=sceneData;
+ return {total,draw(T){
+  c.setTransform(S,0,0,S,0,0);c.globalAlpha=1;c.drawImage(bg,0,0,LW,LH);
+  for(const h of hearts){const span=LH+h.s*4,y=LH+h.s*2-((T*h.v+h.o)%span);c.fillStyle=`rgba(255,111,165,${h.a})`;heart(c,h.x+Math.sin(T*.8+h.ph)*18,y,h.s);c.fill()}
+  for(const s of sparks){const a=Math.max(0,Math.sin(T*s.f+s.ph));c.fillStyle=`rgba(255,255,255,${a*.9})`;star(c,s.x,s.y,s.s*(.6+a*.5));c.fill()}
+  let sc=scenes[scenes.length-1];for(const s of scenes)if(T<s.start+s.dur){sc=s;break}
+  const t=clamp(T-sc.start,0,sc.dur);
+  if(sc.kind==='intro')drawIntro(c,G,sc,t);else if(sc.kind==='outro')drawOutro(c,G,sc,t);else drawEntry(c,G,sc,t);
+  const pw=LW*clamp(T/total);
+  c.fillStyle='rgba(255,255,255,.55)';c.fillRect(0,LH-8,LW,8);
+  const pg=c.createLinearGradient(0,0,LW,0);pg.addColorStop(0,'#ff9cc2');pg.addColorStop(1,'#e0467f');c.fillStyle=pg;c.fillRect(0,LH-8,pw,8);
+  c.fillStyle='#e0467f';heart(c,Math.max(8,pw),LH-8,9);c.fill();
+ }};
+}
+
+/* ---------- UI + บันทึกวิดีโอ ---------- */
+const V={busy:false,cancel:false,url:''};
+const MIMES=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+const pickMime=()=>{if(!window.MediaRecorder)return null;return MIMES.find(m=>{try{return MediaRecorder.isTypeSupported(m)}catch(e){return false}})||''};
+const loadImg=src=>new Promise(res=>{const i=new Image(),to=setTimeout(()=>res(null),20000);i.crossOrigin='anonymous';i.onload=()=>{clearTimeout(to);res(i)};i.onerror=()=>{clearTimeout(to);res(null)};i.src=src});
+const show=(a)=>{$('vOpts').hidden=a!=='opts';$('vStage').hidden=a!=='stage';$('vDone').hidden=a!=='done'};
+const info=(t,err)=>{$('vInfo').textContent=t;$('vInfo').className='msg'+(err?' err':'')};
+
+$('openVid').onclick=()=>{
+ if(!V.busy){show('opts');$('vMsg').textContent='';$('vMsg').className='msg'}
+ const n=entries.length;
+ $('vHint').textContent=n?'พบ '+n+' บันทึก ในไดอารี่':'ยังไม่มีบันทึกในไดอารี่ ลองเขียนก่อนนะ';
+ $('vid').showModal();
+};
+$('vClose').onclick=()=>$('vid').close();
+$('vid').addEventListener('close',()=>{if(V.busy)V.cancel=true});
+$('vStop').onclick=()=>{V.cancel=true};
+$('vAgain').onclick=()=>{show('opts')};
+$('vGo').onclick=start;
+
+async function start(){
+ const msg=(t,e)=>{$('vMsg').textContent=t;$('vMsg').className='msg'+(e?' err':'')};
+ if(V.busy)return;
+ const mime=pickMime();
+ if(mime===null||!HTMLCanvasElement.prototype.captureStream){msg('เบราว์เซอร์นี้สร้างคลิปไม่ได้ ลองใช้ Chrome, Edge หรือ Safari ล่าสุดนะ',1);return}
+ let list=[...entries].sort((a,b)=>a.date===b.date?(a.created||0)-(b.created||0):a.date<b.date?-1:1);
+ const lim=$('vCount').value;if(lim!=='all')list=list.slice(-Number(lim));
+ if(!list.length){msg('ยังไม่มีบันทึกให้ทำคลิป',1);return}
+ if($('vOrder').value==='desc')list.reverse();
+ const land=$('vRatio').value==='land',q=$('vQual').value==='hd'?1.5:1;
+ const LW=land?1280:720,LH=land?720:1280,S=q;
+ V.busy=true;V.cancel=false;
+ let ac=null,wl=null,stream=null;
+ const af=$('vAudio').files[0];
+ if(af){try{ac=new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){ac=null}}
+ show('stage');const cv=$('vCv');cv.width=Math.round(LW*S);cv.height=Math.round(LH*S);
+ try{
+  info('กำลังเตรียมฟอนต์...');
+  const allText=list.map(e=>(e.text||'')+(e.author||'')+(e.music&&e.music.title||'')).join('')+'ไดอารี่ของเรา วันนี้เราไปทำอะไรกันมาบ้างนะ ขอบคุณทุกวันดีๆ ที่เราอยู่ด้วยกันนะ เขียนโดย บันทึก หน้า อาทิตย์จันทร์อังคารพุธพฤหัสบดีศุกร์เสาร์วัน'+TH_M.join('')+'0123456789 ติดตามตอนต่อไป';
+  try{await Promise.all(['400','600','700'].map(w=>document.fonts.load(w+' 32px Mali',allText)))}catch(e){}
+  const paths=[...new Set(list.flatMap(e=>e.images||[]))],imgMap=new Map();let done=0;
+  const queue=paths.slice();
+  await Promise.all(Array.from({length:4},async()=>{
+   while(queue.length&&!V.cancel){const p=queue.shift(),im=await loadImg(rawUrl(p));if(im)imgMap.set(p,im);done++;info('กำลังโหลดรูป '+done+'/'+paths.length+'...')}
+  }));
+  if(V.cancel)throw new Error('cancel');
+  const G=geo(LW,LH),sc=document.createElement('canvas').getContext('2d');
+  const data=buildScenes(list,imgMap,G,sc),rend=makeRenderer(cv,LW,LH,S,data,G),total=data.total;
+  let buf=null;
+  if(ac){info('กำลังเตรียมเพลง...');try{buf=await ac.decodeAudioData(await af.arrayBuffer())}catch(e){toast('เปิดไฟล์เพลงไม่ได้ จะทำคลิปแบบไม่มีเสียง')}}
+  rend.draw(0);
+  stream=cv.captureStream(30);
+  let gain=null,node=null;
+  if(ac&&buf){
+   const dest=ac.createMediaStreamDestination();gain=ac.createGain();gain.gain.value=0;
+   node=ac.createBufferSource();node.buffer=buf;node.loop=true;node.connect(gain);gain.connect(dest);
+   dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  }
+  const opt={videoBitsPerSecond:q>1?10e6:6e6,audioBitsPerSecond:160000};if(mime)opt.mimeType=mime;
+  const rec=new MediaRecorder(stream,opt),chunks=[];
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  const stopped=new Promise(r=>{rec.onstop=r});
+  try{wl=await navigator.wakeLock.request('screen')}catch(e){}
+  let hid=document.hidden;const vis=()=>{if(document.hidden)hid=true};document.addEventListener('visibilitychange',vis);
+  rec.start(1000);
+  const t0=performance.now();
+  if(node){const n=ac.currentTime;node.start();gain.gain.setValueAtTime(0,n);gain.gain.linearRampToValueAtTime(1,n+1.5);if(total>5){gain.gain.setValueAtTime(1,n+total-2.5);gain.gain.linearRampToValueAtTime(0,n+total)}}
+  await new Promise(res=>{
+   const step=now=>{
+    const T=(now-t0)/1000;
+    if(V.cancel||T>=total+.3){res();return}
+    rend.draw(Math.min(T,total));
+    $('vFill').style.width=(clamp(T/total)*100)+'%';
+    info('กำลังบันทึกคลิป '+mmss(T)+' / '+mmss(total)+'  ·  อย่าสลับแท็บหรือปิดหน้าจอนะ');
+    requestAnimationFrame(step);
+   };
+   requestAnimationFrame(step);
+  });
+  document.removeEventListener('visibilitychange',vis);
+  if(rec.state!=='inactive')rec.stop();
+  await stopped;
+  stream.getTracks().forEach(t=>t.stop());
+  if(V.cancel)throw new Error('cancel');
+  const type=rec.mimeType||mime||'video/webm',ext=/mp4/.test(type)?'mp4':'webm';
+  const blob=new Blob(chunks,{type:type.split(';')[0]});
+  if(V.url)URL.revokeObjectURL(V.url);
+  V.url=URL.createObjectURL(blob);
+  const v=$('vPlay');v.onloadedmetadata=()=>{if(v.duration===Infinity){v.currentTime=1e101;v.ontimeupdate=()=>{v.ontimeupdate=null;v.currentTime=0}}};
+  v.src=V.url;
+  const name='our-diary-'+today()+'.'+ext;
+  $('vDl').href=V.url;$('vDl').download=name;
+  const file=new File([blob],name,{type:blob.type});
+  $('vShare').hidden=!(navigator.canShare&&navigator.canShare({files:[file]}));
+  $('vShare').onclick=()=>navigator.share({files:[file],title:'ไดอารี่ของเรา'}).catch(()=>{});
+  $('vDoneMsg').textContent='เสร็จแล้ว 💕 ยาว '+mmss(total)+' นาที · ไฟล์ .'+ext+' '+(blob.size/1048576).toFixed(1)+' MB'+(hid?' (ระหว่างทำมีการสลับแท็บ คลิปอาจมีช่วงที่กระตุก)':'');
+  show('done');
+ }catch(e){
+  if(V.cancel||e.message==='cancel'){show('opts');if($('vid').open)msg('ยกเลิกแล้ว')}
+  else{show('opts');msg('สร้างคลิปไม่สำเร็จ: '+e.message,1)}
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+ }
+ if(ac){try{ac.close()}catch(e){}}
+ if(wl){try{wl.release()}catch(e){}}
+ $('vFill').style.width='0';V.busy=false;V.cancel=false;
+}
+})();
 </script>
 </body>
 </html>
