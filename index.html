@@ -1577,20 +1577,28 @@ async function flushHeart(id){
 }
 
 /* ---- สุ่มความทรงจำ ---- */
-let lastMem=null;
+let lastMem=null,memBag=[];const memHits=new Set();
+function memLabel(e,now){
+ const [y,m,d]=e.date.split('-').map(Number);
+ if(d!==now.getDate())return '';
+ const mo=(now.getFullYear()-y)*12+(now.getMonth()+1-m);
+ if(mo<1)return '';
+ return mo%12===0?'วันนี้เมื่อ '+(mo/12)+' ปีก่อน':'วันนี้เมื่อ '+mo+' เดือนก่อน';
+}
 function memoryPick(list,now=new Date()){
- const hits=[];
- for(const e of list){
-  const [y,m,d]=e.date.split('-').map(Number);
-  if(d!==now.getDate())continue;
-  const months=(now.getFullYear()-y)*12+(now.getMonth()+1-m);
-  if(months<1)continue;
-  hits.push({e,label:months%12===0?'วันนี้เมื่อ '+(months/12)+' ปีก่อน':'วันนี้เมื่อ '+months+' เดือนก่อน'});
- }
- if(hits.length)return hits[Math.floor(Math.random()*hits.length)];
  if(!list.length)return null;
- const pool=list.length>1?list.filter(e=>e.id!==lastMem):list;
- return {e:pool[Math.floor(Math.random()*pool.length)],label:'ความทรงจำที่สุ่มได้'};
+ /* ความทรงจำ "วันนี้เมื่อ..." แสดงให้ดูครั้งเดียวต่อรอบที่เปิดเว็บ หลังจากนั้นสุ่มจากทุกอัน */
+ const hit=list.filter(e=>memLabel(e,now)&&!memHits.has(e.id));
+ if(hit.length){const e=hit[Math.floor(Math.random()*hit.length)];memHits.add(e.id);return {e,label:memLabel(e,now)}}
+ /* สุ่มแบบสับไพ่: วนครบทุกอันก่อนถึงจะซ้ำ และไม่ซ้ำกับอันล่าสุด */
+ const ids=new Set(list.map(e=>e.id));
+ memBag=memBag.filter(id=>ids.has(id));
+ if(!memBag.length){
+  memBag=list.map(e=>e.id).filter(id=>list.length<2||id!==lastMem);
+  for(let i=memBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[memBag[i],memBag[j]]=[memBag[j],memBag[i]]}
+ }
+ const e=list.find(x=>x.id===memBag.pop());
+ return {e,label:memLabel(e,now)||'ความทรงจำที่สุ่มได้'};
 }
 function goEntry(id){
  const el=document.querySelector('article.entry[data-id="'+CSS.escape(String(id))+'"]');
