@@ -6,52 +6,95 @@
 <title>ไดอารี่ของเรา 💕</title>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#ffe4ee;--bg2:#fff4f8;--card:#fffdfd;--ink:#5a2a3c;--soft:#a2677f;--pink:#ff6fa5;--pink2:#ff9cc2;--line:#ffc9dd;}
+:root{--bg:#ffe0ec;--bg2:#fff6fa;--card:#fffdfd;--ink:#5a2a3c;--soft:#a2677f;--pink:#ff6fa5;--pink2:#ff9cc2;--deep:#e0467f;--line:#ffc9dd;}
 *{box-sizing:border-box}
-body{margin:0;font-family:'Mali','Noto Sans Thai',sans-serif;color:var(--ink);line-height:1.6;
- background:radial-gradient(circle at 15% 10%,#fff 0,transparent 35%),linear-gradient(160deg,var(--bg2),var(--bg));min-height:100vh}
-.wrap{max-width:720px;margin:0 auto;padding:28px 16px 80px}
-header{text-align:center;margin-bottom:22px}
-h1{font-size:2.1rem;margin:0;color:var(--pink);font-weight:700;letter-spacing:.5px}
-.sub{color:var(--soft);margin:2px 0 0}
+body{margin:0;font-family:'Mali','Noto Sans Thai',sans-serif;color:var(--ink);line-height:1.6;min-height:100vh;overflow-x:hidden;
+ background:radial-gradient(900px 500px at 10% -5%,#fff 0,transparent 60%),radial-gradient(700px 600px at 100% 25%,#ffc2da 0,transparent 60%),radial-gradient(800px 700px at 0% 90%,#ffd3e5 0,transparent 60%),linear-gradient(160deg,var(--bg2),var(--bg));background-attachment:fixed}
+.hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.hearts span{position:absolute;bottom:-60px;color:rgba(255,111,165,.28);animation:rise 16s linear infinite}
+.hearts span:nth-child(1){left:6%;font-size:22px}
+.hearts span:nth-child(2){left:18%;font-size:34px;animation-duration:21s;animation-delay:-6s}
+.hearts span:nth-child(3){left:31%;font-size:18px;animation-duration:14s;animation-delay:-3s}
+.hearts span:nth-child(4){left:47%;font-size:28px;animation-duration:19s;animation-delay:-11s}
+.hearts span:nth-child(5){left:60%;font-size:20px;animation-duration:17s;animation-delay:-8s}
+.hearts span:nth-child(6){left:72%;font-size:38px;animation-duration:23s;animation-delay:-2s}
+.hearts span:nth-child(7){left:84%;font-size:24px;animation-duration:15s;animation-delay:-12s}
+.hearts span:nth-child(8){left:94%;font-size:30px;animation-duration:20s;animation-delay:-5s}
+@keyframes rise{to{transform:translateY(-115vh) rotate(25deg)}}
+@keyframes up{from{opacity:0;transform:translateY(20px)}}
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:30px 16px 90px}
+header{text-align:center;margin-bottom:24px}
+h1{font-size:clamp(2rem,7vw,2.9rem);margin:0;color:#fff;font-weight:700;letter-spacing:.5px;
+ text-shadow:0 2px 0 #ffb3d1,0 4px 0 #ff9cc2,0 6px 0 #ff7fb1,0 8px 0 #ee5f98,0 14px 18px rgba(224,70,127,.4)}
+.sub{color:var(--soft);margin:14px 0 0}
 .bar{display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:.85rem;color:var(--soft)}
-.live{display:inline-flex;align-items:center;gap:6px}
-.dot{width:9px;height:9px;border-radius:50%;background:#9ad6a8}.dot.off{background:#d9a0b3}
-button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:9px 20px;background:var(--pink);color:#fff;font-weight:600}
-button:hover{background:#f2538f}button.ghost{background:#fff;color:var(--pink);border:1.5px solid var(--pink2)}
-button.ghost:hover{background:#fff0f6}button:disabled{opacity:.6;cursor:wait}
+.live{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);padding:4px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(224,70,127,.15)}
+.dot{width:9px;height:9px;border-radius:50%;background:#7ccf92;box-shadow:0 0 0 3px rgba(124,207,146,.3)}.dot.off{background:#d9a0b3;box-shadow:none}
+button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:9px 22px;background:linear-gradient(180deg,#ff8dba,var(--pink));color:#fff;font-weight:600;
+ box-shadow:0 4px 0 var(--deep),0 9px 14px rgba(224,70,127,.35);transition:transform .1s,box-shadow .1s,filter .15s}
+button:hover{filter:brightness(1.06)}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--deep),0 3px 6px rgba(224,70,127,.3)}
+button.ghost{background:linear-gradient(180deg,#fff,#fff0f6);color:var(--deep);box-shadow:0 0 0 1.5px var(--pink2) inset,0 4px 0 #f3b3cc,0 9px 14px rgba(224,70,127,.15)}
+button.ghost:active{box-shadow:0 0 0 1.5px var(--pink2) inset,0 1px 0 #f3b3cc}
+button:disabled{opacity:.6;cursor:wait}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #ffb3d1;outline-offset:2px}
-.form{background:var(--card);border-radius:22px;padding:18px;border:2px dashed var(--pink2);box-shadow:0 8px 24px rgba(255,111,165,.15)}
+.form{max-width:720px;margin:0 auto;background:rgba(255,255,255,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:2px solid #fff;border-radius:28px;padding:20px;
+ box-shadow:0 1px 0 #fff inset,0 26px 40px -18px rgba(224,70,127,.5),0 6px 14px rgba(90,42,60,.08)}
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 label{display:block;font-size:.85rem;color:var(--soft);margin-bottom:2px}
-input,textarea{font:inherit;color:var(--ink);width:100%;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;background:#fff}
+input,textarea{font:inherit;color:var(--ink);width:100%;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;background:#fff;box-shadow:inset 0 2px 5px rgba(224,70,127,.1)}
 .row>div{flex:1;min-width:150px}
 textarea{min-height:100px;resize:vertical}
 .previews{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.previews img{width:72px;height:72px;object-fit:cover;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.previews img{width:72px;height:72px;object-fit:cover;border-radius:12px;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .msg{font-size:.85rem;color:var(--soft)}.msg.err{color:#c4264f}
-.sorter{display:flex;justify-content:flex-end;margin:22px 0 6px}
-.entry{position:relative;background:var(--card);border-radius:22px;padding:18px 18px 16px;margin:0 0 22px;box-shadow:0 8px 24px rgba(255,111,165,.18);border-left:8px solid var(--pink2)}
-.entry time{display:block;font-weight:700;color:var(--pink);font-size:1.05rem}
-.by{font-size:.8rem;color:var(--soft)}
-.entry p{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
-.photos{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
-.photos figure{margin:0;background:#fff;padding:6px 6px 12px;border-radius:6px;box-shadow:0 3px 10px rgba(90,42,60,.2);flex:1 1 180px;max-width:100%}
-.photos figure:nth-child(odd){transform:rotate(-1.2deg)}.photos figure:nth-child(even){transform:rotate(1.2deg)}
-.photos img{display:block;width:100%;height:auto;max-height:420px;object-fit:cover;border-radius:3px;cursor:zoom-in}
-.del{position:absolute;top:10px;right:12px;background:none;color:var(--soft);padding:2px 8px;font-size:.8rem;font-weight:400}
-.del:hover{background:#ffe9f1;color:#c4264f}
-.empty{text-align:center;color:var(--soft);padding:34px 10px}
-dialog{border:0;border-radius:22px;padding:20px;max-width:440px;width:92%;background:var(--card);color:var(--ink)}
-dialog::backdrop{background:rgba(90,42,60,.45)}
+.sorter{display:flex;justify-content:center;margin:34px 0 22px}
+
+.timeline{position:relative;display:grid;grid-template-columns:1fr 1fr;column-gap:64px;row-gap:28px;perspective:1400px}
+.timeline::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:5px;margin-left:-2.5px;border-radius:5px;
+ background:linear-gradient(180deg,transparent,var(--pink2) 5%,var(--pink) 50%,var(--pink2) 95%,transparent);box-shadow:0 0 14px rgba(255,111,165,.5)}
+.timeline:has(.empty)::before{display:none}
+.entry{position:relative;padding:20px 20px 18px;border-radius:26px;background:linear-gradient(150deg,#fff 0,#fff0f6 100%);border:1px solid #fff;
+ box-shadow:0 1px 0 #fff inset,0 3px 0 rgba(255,156,194,.4),0 22px 34px -14px rgba(224,70,127,.55),0 6px 12px rgba(90,42,60,.07);
+ transition:transform .25s,box-shadow .25s;animation:up .5s both}
+.entry:not(:first-child){margin-top:-34px}
+.entry::before{content:'\2665';position:absolute;right:16px;bottom:6px;font-size:64px;line-height:1;color:rgba(255,111,165,.1);pointer-events:none}
+.entry::after{content:'\2665';position:absolute;top:22px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#fff;
+ background:radial-gradient(circle at 30% 30%,#ffb3d1,var(--pink) 60%,var(--deep));border:3px solid #fff;box-shadow:0 4px 10px rgba(224,70,127,.55),0 0 0 6px rgba(255,156,194,.3)}
+.l{grid-column:1;transform:rotate(-.6deg)}.l::after{right:-45px}
+.r{grid-column:2;transform:rotate(.6deg)}.r::after{left:-45px}
+.entry:hover{transform:translateY(-6px) rotate(0);box-shadow:0 1px 0 #fff inset,0 3px 0 rgba(255,156,194,.5),0 32px 40px -14px rgba(224,70,127,.6),0 8px 16px rgba(90,42,60,.1)}
+.entry time{display:inline-block;font-weight:700;color:#fff;font-size:.95rem;padding:2px 16px;border-radius:999px;background:linear-gradient(180deg,#ff8dba,var(--pink));box-shadow:0 3px 0 var(--deep),0 6px 10px rgba(224,70,127,.3)}
+.by{margin-left:10px;font-size:.8rem;color:var(--soft)}
+.entry p{position:relative;z-index:1;margin:12px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.photos{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:18px 14px;margin-top:18px}
+.photos figure{position:relative;margin:0;background:#fff;padding:7px 7px 16px;border-radius:4px;flex:1 1 170px;max-width:100%;transition:transform .2s;
+ box-shadow:0 12px 18px -6px rgba(90,42,60,.4),0 2px 4px rgba(90,42,60,.15)}
+.photos figure::before{content:'';position:absolute;top:-9px;left:50%;width:58px;height:18px;margin-left:-29px;background:rgba(255,156,194,.65);transform:rotate(-3deg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.photos figure:nth-child(odd){transform:rotate(-1.8deg)}.photos figure:nth-child(even){transform:rotate(1.5deg)}
+.photos figure:hover{transform:rotate(0) scale(1.03) translateY(-3px);z-index:2}
+.photos img{display:block;width:100%;height:auto;max-height:420px;object-fit:cover;border-radius:2px;cursor:zoom-in}
+.entry .del{position:absolute;top:12px;right:14px;z-index:2;background:none;box-shadow:none;color:var(--soft);padding:2px 10px;font-size:.78rem;font-weight:400}
+.entry .del:hover{background:#ffe3ee;color:#c4264f;filter:none}.entry .del:active{transform:none;box-shadow:none}
+.empty{grid-column:1/-1;text-align:center;color:var(--soft);padding:34px 10px;background:rgba(255,255,255,.7);border-radius:22px}
+dialog{border:0;border-radius:24px;padding:22px;max-width:440px;width:92%;background:var(--card);color:var(--ink);box-shadow:0 30px 60px -20px rgba(224,70,127,.6)}
+dialog::backdrop{background:rgba(90,42,60,.45);backdrop-filter:blur(3px)}
 dialog h2{margin:0 0 6px;color:var(--pink)}
 dialog small{display:block;color:var(--soft);margin:4px 0 10px}
 #lb{max-width:96vw;width:auto;padding:8px;background:#fff}#lb img{max-width:100%;max-height:88vh;display:block;border-radius:12px}
-@media(prefers-reduced-motion:no-preference){.entry{transition:transform .2s}.entry:hover{transform:translateY(-2px)}}
+@media(max-width:760px){
+ .timeline{grid-template-columns:1fr;padding-left:34px;column-gap:0;perspective:none}
+ .timeline::before{left:12px;margin-left:0}
+ .l,.r{grid-column:1}
+ .entry:not(:first-child){margin-top:0}
+ .l::after,.r::after{left:-32px;right:auto}
+}
+@media(prefers-reduced-motion:reduce){.hearts{display:none}.entry{animation:none}}
 </style>
 </head>
 <body>
+<div class="hearts" aria-hidden="true"><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span><span>&#9829;</span></div>
 <div class="wrap">
 <header>
  <h1>💕 ไดอารี่ของเรา 💕</h1>
@@ -79,7 +122,7 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
 </section>
 
 <div class="sorter"><button class="ghost" type="button" id="sort">เรียง: ใหม่ไปเก่า</button></div>
-<main id="list"></main>
+<main id="list" class="timeline"></main>
 </div>
 
 <dialog id="set">
@@ -103,7 +146,6 @@ dialog small{display:block;color:var(--soft);margin:4px 0 10px}
  <div class="actions" id="aLinks" style="margin-top:10px"><button class="ghost" type="button" id="aChange">เปลี่ยนรหัส</button><button class="ghost" type="button" id="aReset">เปลี่ยน GitHub Token</button></div>
 </dialog>
 <dialog id="lb"><img id="lbImg" alt=""></dialog>
-
 <script>
 /* ใส่ค่าตรงนี้เพื่อให้ทุกคนที่เปิดเว็บเห็นข้อมูลทันทีโดยไม่ต้องตั้งค่า */
 const CONFIG={owner:'sorawitsenkram-lab',repo:'GFMaprang',branch:'main'};
@@ -144,8 +186,8 @@ function render(){
  if(!entries.length){const d=document.createElement('div');d.className='empty';
   d.textContent=ready()?'ยังไม่มีบันทึก เขียนเรื่องแรกของเราด้านบนได้เลย':'กดปุ่มตั้งค่าเพื่อเชื่อมต่อ GitHub ก่อน';box.append(d);return}
  const s=[...entries].sort((a,b)=>(a.date===b.date?(a.created||0)-(b.created||0):a.date<b.date?-1:1)*(newestFirst?-1:1));
- for(const e of s){
-  const a=document.createElement('article');a.className='entry';
+ for(const [n,e] of s.entries()){
+  const a=document.createElement('article');a.className='entry '+(n%2?'r':'l');a.style.gridRow=n+1;
   const t=document.createElement('time');t.dateTime=e.date;
   const [y,m,d]=e.date.split('-').map(Number);
   t.textContent=new Date(y,m-1,d).toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
