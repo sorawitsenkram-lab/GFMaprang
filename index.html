@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ff6fa5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ไดอารี่">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>ไดอารี่ของเรา 💕</title>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -270,6 +278,18 @@ body.introing .entry.fx.in{animation-play-state:paused!important}
 @media(max-width:380px){#intro{padding:12px}.ibox{padding:20px 16px 18px}}
 @supports(height:100dvh){#intro .ibox{max-height:calc(100dvh - 32px)}}
 @media(prefers-reduced-motion:reduce){#inPhoto,#inPhoto.hide{transition:opacity .3s}}
+
+/* ---- ตัวนับวัน ---- */
+.cnt{margin:14px auto 0;max-width:520px;padding:12px 16px;border-radius:22px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:2px solid #fff;box-shadow:0 8px 20px -10px rgba(224,70,127,.5);color:var(--ink);text-align:center;line-height:1.6}
+.cnt[hidden]{display:none}
+.cnt b{color:var(--deep)}
+.cnt .big{font-size:clamp(1.05rem,4.6vw,1.4rem);font-weight:700;color:var(--deep)}
+.cnt .big b{font-size:1.3em}
+.cnt .det{font-size:.85rem;color:var(--soft)}
+.cnt .row2{font-size:.95rem;margin-top:4px}
+.bar button[hidden]{display:none}
+#dts input[type=date]{width:100%}
+#dts .row{display:flex;gap:10px}#dts .row select{flex:1}
 </style>
 </head>
 <body class="introing">
@@ -356,11 +376,12 @@ try{
 <div class="wrap">
 <header>
  <h1>💕 ไดอารี่ของผมถึงมะปราง💕</h1>
+ <div id="cnt" class="cnt" aria-live="polite" hidden></div>
  <p class="sub">รักอ้วนนะ ❤️</p>
  <div class="bar">
   <span class="live"><span class="dot off" id="dot"></span><span id="status">กำลังเชื่อมต่อ...</span></span>
   <button class="ghost" id="openSet" type="button">ตั้งค่า</button>
-  <button class="ghost" id="openVid" type="button">🎬 สร้างคลิป</button>
+  <button class="ghost" id="openVid" type="button">🎬 สร้างคลิป</button><button class="ghost" id="openDates" type="button">💞 ตั้งวันที่</button><button class="ghost" id="openInst" type="button" hidden>📲 ติดตั้งแอป</button>
  </div>
 </header>
 
@@ -426,6 +447,21 @@ try{
  <div class="actions" id="aLinks" style="margin-top:10px"><button class="ghost" type="button" id="aChange">เปลี่ยนรหัส</button><button class="ghost" type="button" id="aReset">เปลี่ยน GitHub Token</button></div>
 </dialog>
 <dialog id="lb"><img id="lbImg" alt=""></dialog>
+<dialog id="dts">
+ <h2>💞 วันสำคัญของเรา</h2>
+ <small>ตั้งครั้งเดียว ทุกคนที่เปิดเว็บจะเห็นตัวนับวันเหมือนกัน</small>
+ <label for="dStart">วันที่เริ่มคบกัน</label>
+ <input type="date" id="dStart">
+ <label for="bMon">วันเกิดของเธอ (ไม่ต้องใส่ปีเกิด)</label>
+ <div class="row"><select id="bMon" aria-label="เดือนเกิด"></select><select id="bDay" aria-label="วันที่เกิด"></select></div>
+ <small id="dErr" style="color:#c0245f"></small>
+ <div class="actions" style="margin-top:8px"><button type="button" id="dSave">บันทึก</button><button class="ghost" type="button" id="dClose">ปิด</button></div>
+</dialog>
+<dialog id="inst">
+ <h2>📲 เพิ่มลงหน้าจอโฮม</h2>
+ <p id="instTxt"></p>
+ <div class="actions"><button type="button" id="instOk">เข้าใจแล้ว</button></div>
+</dialog>
 <dialog id="cfm">
  <h2>ลบบันทึกนี้?</h2>
  <small>ลบแล้วจะหายจากไดอารี่ของทุกคน</small>
@@ -1385,6 +1421,96 @@ if(gate&&!gate.classList.contains('out')&&!gate.classList.contains('gone')){docu
 else{setTimeout(begin,1800);(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(begin,begin)}
 })();
 try{document.getElementById('lb').addEventListener('click',()=>document.getElementById('lb').close())}catch(e){}
+
+/* ---- ตัวนับวัน (ตั้งวันที่ครั้งเดียว เก็บไว้ที่ data/settings.json ทุกคนเห็นเหมือนกัน) ---- */
+const HER='มะปราง', SET_PATH='data/settings.json';
+let love={start:'',bday:''};
+try{const o=JSON.parse(store.get('cd_love')||'{}');if(o&&typeof o==='object')love={start:o.start||'',bday:o.bday||''}}catch(e){}
+const MON=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const dayDiff=(a,b)=>Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/864e5);
+function nextOcc(m,d,now){let t=new Date(now.getFullYear(),m,d);if(dayDiff(now,t)<0)t=new Date(now.getFullYear()+1,m,d);return t}
+function renderCount(now=new Date()){
+ const el=$('cnt'),okS=/^\d{4}-\d{2}-\d{2}$/.test(love.start),okB=/^\d{2}-\d{2}$/.test(love.bday),rows=[];
+ if(okS){
+  const [y,m,d]=love.start.split('-').map(Number),n=dayDiff(new Date(y,m-1,d),now);
+  if(n>=0){
+   let yy=now.getFullYear()-y,mm=now.getMonth()-(m-1),dd=now.getDate()-d;
+   if(dd<0){mm--;dd+=new Date(now.getFullYear(),now.getMonth(),0).getDate()}
+   if(mm<0){yy--;mm+=12}
+   const parts=[yy&&yy+' ปี',mm&&mm+' เดือน',dd&&dd+' วัน'].filter(Boolean).join(' ');
+   rows.push(n===0?'<div class="big">💞 วันนี้เราเริ่มต้นด้วยกัน</div>':'<div class="big">💞 เรารักกันมาแล้ว <b>'+n.toLocaleString('th-TH')+'</b> วัน</div>'+(parts?'<div class="det">('+parts+')</div>':''));
+   let na=nextOcc(m-1,d,now);if(na.getFullYear()-y<1)na=new Date(y+1,m-1,d);
+   const left=dayDiff(now,na),yrs=na.getFullYear()-y;
+   rows.push(left===0?'<div class="row2">🎉 วันนี้ครบรอบ '+yrs+' ปีของเรา!</div>':'<div class="row2">💍 อีก <b>'+left+'</b> วันครบรอบ '+yrs+' ปี ('+d+' '+MON[m-1]+')</div>');
+  }
+ }
+ if(okB){
+  const [m,d]=love.bday.split('-').map(Number),left=dayDiff(now,nextOcc(m-1,d,now));
+  rows.push(left===0?'<div class="row2">🎂 วันนี้วันเกิด'+HER+'! สุขสันต์วันเกิดนะ 💕</div>':'<div class="row2">🎂 อีก <b>'+left+'</b> วันถึงวันเกิด'+HER+' ('+d+' '+MON[m-1]+')</div>');
+ }
+ el.innerHTML=rows.join('');el.hidden=!rows.length;
+}
+async function loadLove(){
+ if(!ready())return;
+ try{
+  const r=await fetch(rawUrl(SET_PATH)+'?t='+Date.now(),{cache:'no-store'});
+  if(r.ok){const o=await r.json();love={start:o.start||'',bday:o.bday||''};store.set('cd_love',JSON.stringify(love))}
+ }catch(e){}
+ renderCount();
+}
+async function putJson(path,obj,msg){
+ for(let i=0;i<3;i++){
+  const g=await gh('GET',path);let sha;
+  if(g.status===200)sha=(await g.json()).sha;else if(g.status!==404)throw new Error('อ่านไฟล์ไม่สำเร็จ ('+g.status+')');
+  const p=await gh('PUT',path,{message:msg,branch:cfg.branch,sha,content:toB64(JSON.stringify(obj,null,1))});
+  if(p.ok)return;
+  if(p.status!==409&&p.status!==422)throw new Error('บันทึกไม่สำเร็จ ('+p.status+')');
+ }
+ throw new Error('ลองกดบันทึกอีกครั้ง');
+}
+$('bMon').innerHTML='<option value="">เดือน</option>'+MON.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');
+$('bDay').innerHTML='<option value="">วันที่</option>'+Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+'</option>').join('');
+$('openDates').onclick=()=>{
+ $('dStart').value=/^\d{4}-\d{2}-\d{2}$/.test(love.start)?love.start:'';
+ const b=/^\d{2}-\d{2}$/.test(love.bday)?love.bday.split('-').map(Number):['',''];
+ $('bMon').value=b[0];$('bDay').value=b[1];$('dErr').textContent='';$('dts').showModal();
+};
+$('dClose').onclick=()=>$('dts').close();
+$('dSave').onclick=async()=>{
+ const start=$('dStart').value,mo=+$('bMon').value,da=+$('bDay').value,err=t=>{$('dErr').textContent=t};
+ if(!start&&!mo&&!da){err('ใส่วันที่เริ่มคบหรือวันเกิดอย่างน้อยหนึ่งอย่าง');return}
+ if((mo&&!da)||(!mo&&da)){err('เลือกวันเกิดให้ครบทั้งเดือนและวันที่');return}
+ if(mo&&da>new Date(2024,mo,0).getDate()){err('เดือนนี้ไม่มีวันที่ '+da);return}
+ if(!ready()){$('set').showModal();return}
+ if(!token&&!(await openAuth()))return;
+ const btn=$('dSave');btn.disabled=true;err('กำลังบันทึก...');
+ try{
+  const nv={start,bday:mo?String(mo).padStart(2,'0')+'-'+String(da).padStart(2,'0'):''};
+  await putJson(SET_PATH,nv,'ตั้งวันสำคัญ');
+  love=nv;store.set('cd_love',JSON.stringify(love));renderCount();$('dts').close();toast('บันทึกวันสำคัญแล้ว 💕');
+ }catch(e){err(e.message)}
+ btn.disabled=false;
+};
+renderCount();loadLove();
+setInterval(()=>renderCount(),60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderCount();loadLove()}});
+
+/* ---- ติดตั้งเป็นแอป (PWA) ---- */
+if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+let dip=null;
+const isApp=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e});
+window.addEventListener('appinstalled',()=>{$('openInst').hidden=true;dip=null});
+$('openInst').hidden=isApp;
+$('openInst').onclick=async()=>{
+ if(dip){dip.prompt();try{await dip.userChoice}catch(e){}dip=null;return}
+ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ $('instTxt').innerHTML=ios
+  ?'บน iPhone / iPad ให้เปิดหน้านี้ด้วย <b>Safari</b> กดปุ่มแชร์ (ไอคอนสี่เหลี่ยมมีลูกศรชี้ขึ้น) แล้วเลื่อนลงเลือก <b>เพิ่มไปยังหน้าจอโฮม</b> จากนั้นกด <b>เพิ่ม</b>'
+  :'กดเมนู <b>⋮</b> ของเบราว์เซอร์ แล้วเลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงหน้าจอหลัก</b>';
+ $('inst').showModal();
+};
+$('instOk').onclick=()=>$('inst').close();
 </script>
 </body>
 </html>
