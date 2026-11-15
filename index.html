@@ -251,6 +251,11 @@ dialog,.cal{background:linear-gradient(150deg,#fff1f7,#ffd3e5)}
  <div class="actions" id="aLinks" style="margin-top:10px"><button class="ghost" type="button" id="aChange">เปลี่ยนรหัส</button><button class="ghost" type="button" id="aReset">เปลี่ยน GitHub Token</button></div>
 </dialog>
 <dialog id="lb"><img id="lbImg" alt=""></dialog>
+<dialog id="cfm">
+ <h2>ลบบันทึกนี้?</h2>
+ <small>ลบแล้วจะหายจากไดอารี่ของทุกคน</small>
+ <div class="actions"><button type="button" id="cfmYes">ลบเลย</button><button class="ghost" type="button" id="cfmNo">ยกเลิก</button></div>
+</dialog>
 <div id="ytHost" class="yth" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -420,9 +425,22 @@ $('save').onclick=async()=>{
 async function removeEntry(id){
  if(!ready()){$('set').showModal();return}
  if(!token&&!(await openAuth()))return;
- if(!confirm('ลบบันทึกนี้ใช่ไหม'))return;
- try{entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');localDels.set(id,Date.now());saveLocal();lastRaw=JSON.stringify(entries);render()}
- catch(e){say(e.message,1)}
+ if(!(await askDelete()))return;
+ toast('กำลังลบ...');
+ try{
+  entries=await commit(l=>l.filter(x=>x.id!==id),'ลบบันทึก');
+  localAdds.delete(id);localDels.set(id,Date.now());saveLocal();
+  lastRaw=JSON.stringify(entries);render();toast('ลบแล้ว');
+ }catch(e){toast('ลบไม่สำเร็จ: '+e.message)}
+}
+function askDelete(){
+ return new Promise(res=>{
+  const d=$('cfm');let ok=false;
+  $('cfmYes').onclick=()=>{ok=true;d.close()};
+  $('cfmNo').onclick=()=>d.close();
+  d.onclose=()=>res(ok);
+  d.showModal();
+ });
 }
 
 /* ---- รหัสเขียน: เก็บ GitHub token แบบเข้ารหัสไว้ใน data/auth.json ---- */
