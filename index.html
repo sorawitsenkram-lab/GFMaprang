@@ -274,17 +274,35 @@ const say=(t,err)=>{$('msg').textContent=t;$('msg').className='msg'+(err?' err':
 
 function setLive(ok,t){$('dot').className='dot'+(ok?'':' off');$('status').textContent=t}
 
+let fails=0;
+async function readData(){
+ let why='';
+ try{
+  const r=await fetch(api(DATA_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
+  if(r.status===404)return null;
+  if(r.ok)return await r.text();
+  why='GitHub '+r.status;
+ }catch(e){why='ต่อ api.github.com ไม่ได้'}
+ try{
+  const r=await fetch(rawUrl(DATA_PATH)+'?t='+Date.now(),{cache:'no-store'});
+  if(r.status===404)return null;
+  if(r.ok)return await r.text();
+  why+=' / raw '+r.status;
+ }catch(e){why+=' / ต่อ raw.githubusercontent.com ไม่ได้'}
+ throw new Error(why);
+}
 async function load(){
  if(!ready()){setLive(false,'ยังไม่ได้ตั้งค่า');render();return}
  try{
-  const r=await fetch(api(DATA_PATH)+'?ref='+encodeURIComponent(cfg.branch),{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
-  if(r.status===404){entries=[];lastRaw='[]';setLive(true,'ออนไลน์ (ยังไม่มีบันทึก)');render();return}
-  if(!r.ok)throw new Error(r.status);
-  const list=mergeLocal(JSON.parse(await r.text())),sig=JSON.stringify(list);
+  const txt=await readData();
+  const list=mergeLocal(txt===null?[]:JSON.parse(txt)),sig=JSON.stringify(list);
   if(sig!==lastRaw){const had=lastRaw!==null,old=new Set(entries.map(e=>e.id));lastRaw=sig;entries=list;const add=entries.filter(e=>!old.has(e.id));render();if(had&&add.length)toast('มีบันทึกใหม่ '+add.length+' รายการ 💕')}
-  setLive(true,'เรียลไทม์ · เช็กล่าสุด '+new Date().toLocaleTimeString('th-TH'));
- }catch(e){setLive(false,'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง')}
+  fails=0;
+  setLive(true,txt===null&&!list.length?'ยังไม่พบไฟล์บันทึก (ถ้าเคยเขียนแล้ว เช็กชื่อ repo/branch และตั้ง repo เป็น Public)':'เรียลไทม์ · เช็กล่าสุด '+new Date().toLocaleTimeString('th-TH'));
+ }catch(e){fails++;setLive(false,'เชื่อมต่อไม่ได้ ('+e.message+') จะลองใหม่เอง')}
 }
+let pollT;
+function loop(){clearTimeout(pollT);pollT=setTimeout(async()=>{if(!document.hidden)await load();loop()},Math.min(60000,POLL_MS*(1+fails*2)))}
 
 function render(){
  const prevSeen=seen;seen=new Set(entries.map(e=>e.id));
@@ -611,7 +629,7 @@ $('lb').onclick=()=>$('lb').close();
 
 setDate(today());loadYT();
 render();load();
-setInterval(()=>{if(!document.hidden)load()},POLL_MS);
+loop();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
 window.addEventListener('focus',load);window.addEventListener('online',load);
 </script>
