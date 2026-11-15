@@ -1464,7 +1464,7 @@ function renderCount(now=new Date()){
  }
  if(okB){
   const [m,d]=love.bday.split('-').map(Number),left=dayDiff(now,nextOcc(m-1,d,now));
-  rows.push(left===0?'<div class="row2">🎂 วันนี้วันเกิด'+HER+'! สุขสันต์วันเกิดนะ 💕</div>':'<div class="row2">🎂 อีก <b>'+left+'</b> วันถึงวันเกิด'+HER+' ('+d+' '+MON[m-1]+')</div>');
+  rows.push(left===0?'<div class="row2">🎂 วันนี้วันเกิด'+HER+'! สุขสันต์วันเกิดนะ 💕</div>':'<div class="row2">🎂 อีก <b>'+left+'</b> ครบรอบวันที่คุยกับ'+HER+' ('+d+' '+MON[m-1]+')</div>');
  }
  el.innerHTML=rows.join('');el.hidden=!rows.length;
 }
